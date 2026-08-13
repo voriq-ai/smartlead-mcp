@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { CoreClient } from './client/core-client.js';
 import { ProspectClient } from './client/prospect-client.js';
+import { ClientRegistry } from './client/registry.js';
 import { SERVER_NAME, type SmartleadConfig } from './config.js';
 import { registerTools } from './tools/register.js';
 import type { ToolContext } from './tools/types.js';
@@ -31,6 +32,7 @@ export function createServer(config: SmartleadConfig, options: CreateServerOptio
     config,
     core: new CoreClient(config, options.fetchImpl, options.sleep),
     prospect: new ProspectClient(config, options.fetchImpl, options.sleep),
+    clients: new ClientRegistry(config, options.fetchImpl, options.sleep),
   };
 
   const server = new McpServer(

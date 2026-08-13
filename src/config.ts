@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const DEFAULT_CORE_BASE_URL = 'https://server.smartlead.ai/api/v1';
 export const DEFAULT_PROSPECT_BASE_URL = 'https://prospect-api.smartlead.ai/api/v1/search-email-leads';
+export const DEFAULT_DELIVERY_BASE_URL = 'https://smartdelivery.smartlead.ai/api/v1';
+export const DEFAULT_SENDERS_BASE_URL = 'https://smart-senders.smartlead.ai/api/v1';
 export const DEFAULT_TIMEOUT_MS = 30_000;
 export const DEFAULT_MAX_RETRIES = 2;
 
@@ -13,6 +15,8 @@ export interface SmartleadConfig {
   apiKey: string;
   coreBaseUrl: string;
   prospectBaseUrl: string;
+  deliveryBaseUrl: string;
+  sendersBaseUrl: string;
   mode: ServerMode;
   allowCreditSpend: boolean;
   allowSend: boolean;
@@ -63,6 +67,8 @@ const envSchema = z.object({
     .min(1, 'SMARTLEAD_API_KEY is required but was not set in the environment'),
   SMARTLEAD_CORE_BASE_URL: httpUrl.default(DEFAULT_CORE_BASE_URL),
   SMARTLEAD_PROSPECT_BASE_URL: httpUrl.default(DEFAULT_PROSPECT_BASE_URL),
+  SMARTLEAD_DELIVERY_BASE_URL: httpUrl.default(DEFAULT_DELIVERY_BASE_URL),
+  SMARTLEAD_SENDERS_BASE_URL: httpUrl.default(DEFAULT_SENDERS_BASE_URL),
   SMARTLEAD_MCP_MODE: z.enum(['readonly', 'standard', 'unrestricted']).default('readonly'),
   SMARTLEAD_MCP_ALLOW_CREDIT_SPEND: booleanFlag.default(false),
   SMARTLEAD_MCP_ALLOW_SEND: booleanFlag.default(false),
@@ -107,6 +113,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): SmartleadConfi
     apiKey: value.SMARTLEAD_API_KEY,
     coreBaseUrl: value.SMARTLEAD_CORE_BASE_URL,
     prospectBaseUrl: value.SMARTLEAD_PROSPECT_BASE_URL,
+    deliveryBaseUrl: value.SMARTLEAD_DELIVERY_BASE_URL,
+    sendersBaseUrl: value.SMARTLEAD_SENDERS_BASE_URL,
     mode: value.SMARTLEAD_MCP_MODE,
     allowCreditSpend: value.SMARTLEAD_MCP_ALLOW_CREDIT_SPEND,
     allowSend: value.SMARTLEAD_MCP_ALLOW_SEND,
@@ -122,6 +130,8 @@ export function describeConfig(config: SmartleadConfig): Record<string, unknown>
     mode: config.mode,
     core_base_url: config.coreBaseUrl,
     prospect_base_url: config.prospectBaseUrl,
+    delivery_base_url: config.deliveryBaseUrl,
+    senders_base_url: config.sendersBaseUrl,
     allow_credit_spend: config.allowCreditSpend,
     allow_send: config.allowSend,
     allow_destructive: config.allowDestructive,

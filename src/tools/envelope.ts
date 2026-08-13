@@ -3,7 +3,7 @@ import { toSmartleadError, type SmartleadApiError } from '../client/errors.js';
 import { redactValue } from '../security/redaction.js';
 import type { PolicyDenial } from '../security/policy.js';
 import { ToolRefusal, type ToolDefinition, type ToolPayload } from './types.js';
-import { DEFAULT_CORE_BASE_URL, DEFAULT_PROSPECT_BASE_URL } from '../config.js';
+import { HOST_DEFAULT_BASE_URL } from '../client/registry.js';
 
 /**
  * Normalised result envelope returned by every tool.
@@ -136,11 +136,6 @@ export function errorEnvelope(
   };
 }
 
-const HOST_BASE_URL: Record<'core' | 'prospect', string> = {
-  core: DEFAULT_CORE_BASE_URL,
-  prospect: DEFAULT_PROSPECT_BASE_URL,
-};
-
 /**
  * Generate the tool description shown to agents.
  *
@@ -160,7 +155,7 @@ export function buildDescription(definition: ToolDefinition): string {
   ];
   lines.push(`Safety — ${flags.join('; ')}.`);
   lines.push(
-    `Endpoint: ${definition.endpoint.method} ${HOST_BASE_URL[definition.endpoint.host]}${definition.endpoint.route}.`,
+    `Endpoint: ${definition.endpoint.method} ${HOST_DEFAULT_BASE_URL[definition.endpoint.host]}${definition.endpoint.route}.`,
   );
   if (definition.notes?.length) lines.push(...definition.notes);
   return lines.join('\n');

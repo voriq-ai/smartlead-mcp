@@ -1,5 +1,6 @@
 import { CoreClient } from '../../src/client/core-client.js';
 import { ProspectClient } from '../../src/client/prospect-client.js';
+import { ClientRegistry } from '../../src/client/registry.js';
 import type { SmartleadConfig } from '../../src/config.js';
 import type { ToolContext } from '../../src/tools/types.js';
 import { createMockFetch, noSleep, testConfig, type MockFetch, type MockReply } from './mock-fetch.js';
@@ -22,6 +23,7 @@ export function createTestContext(
       config,
       core: new CoreClient(config, mock.fetch, noSleep),
       prospect: new ProspectClient(config, mock.fetch, noSleep),
+      clients: new ClientRegistry(config, mock.fetch, noSleep),
     },
   };
 }

@@ -14,6 +14,8 @@ export function testConfig(overrides: Partial<SmartleadConfig> = {}): SmartleadC
     apiKey: TEST_API_KEY,
     coreBaseUrl: 'https://server.smartlead.ai/api/v1',
     prospectBaseUrl: 'https://prospect-api.smartlead.ai/api/v1/search-email-leads',
+    deliveryBaseUrl: 'https://smartdelivery.smartlead.ai/api/v1',
+    sendersBaseUrl: 'https://smart-senders.smartlead.ai/api/v1',
     mode: 'readonly',
     allowCreditSpend: false,
     allowSend: false,

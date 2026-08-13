@@ -76,7 +76,8 @@
     "verify:publish": "npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run pack:check",
     "verify": "npm run verify:publish && npm run smoke:package",
     "prepublishOnly": "npm run verify:publish",
-    "smoke:package": "node scripts/smoke-installed-package.mjs"
+    "smoke:package": "node scripts/smoke-installed-package.mjs",
+    "try": "node scripts/try-tool.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

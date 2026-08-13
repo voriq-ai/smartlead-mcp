@@ -4,16 +4,19 @@ import type { ProspectClient } from '../client/prospect-client.js';
 import type { SmartleadConfig } from '../config.js';
 import type { Capability } from '../security/policy.js';
 import type { HttpMethod } from '../client/http.js';
+import type { ClientRegistry, SmartleadHost } from '../client/registry.js';
 
 export interface ToolContext {
   config: SmartleadConfig;
   core: CoreClient;
   prospect: ProspectClient;
+  /** Per-host clients used by catalog-driven tools. */
+  clients: ClientRegistry;
 }
 
 /** Documented upstream endpoint a tool maps onto. Surfaced in docs and tests. */
 export interface EndpointRef {
-  host: 'core' | 'prospect';
+  host: SmartleadHost;
   method: HttpMethod;
   /** Route relative to the host base URL, e.g. `/search-contacts`. */
   route: string;

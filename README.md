@@ -2,14 +2,17 @@
 
 > **Unofficial MCP integration for Smartlead. This project is not affiliated with, endorsed by, or sponsored by Smartlead.ai.**
 
-A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes
-Smartlead's **SmartProspect API** — plus a deliberately small, safe subset of the
-core Smartlead API — to MCP-capable agents and clients.
+A [Model Context Protocol](https://modelcontextprotocol.io) server for the
+**Smartlead API**, with complete **SmartProspect** coverage, for MCP-capable
+agents and clients.
 
-Version 0.1.0 is **not** full Smartlead API coverage. It is:
+**191 tools covering 191 of the 194 unique endpoints in Smartlead's official API
+reference**, across all four Smartlead API hosts. Three endpoints are excluded
+on purpose, each with a recorded reason — see
+[`docs/endpoint-coverage.md`](docs/endpoint-coverage.md).
 
-- **complete coverage of the 26 documented SmartProspect endpoints**, and
-- **13 core Smartlead operations** chosen to complete the prospect → campaign workflow.
+That includes **all 26 documented SmartProspect endpoints**, the prospecting
+product other Smartlead MCP servers omit entirely.
 
 Everything is built from Smartlead's public official documentation. Every route,
 method, parameter name and limit is traceable to a documentation page listed in
@@ -47,7 +50,7 @@ targets routes that are not in Smartlead's current API reference (for example
 `POST /api/v1/verify-emails`, which returns `404 Cannot POST
 /api/v1/verify-emails`). This package:
 
-- talks to **both** documented hosts, correctly and separately;
+- talks to **all four** documented Smartlead hosts, correctly and separately;
 - never implements an undocumented route — there is no `verify_emails` tool here;
 - treats credit spend as a privileged action that requires two independent
   approvals before any HTTP request is made;
@@ -77,6 +80,44 @@ SMARTLEAD_API_KEY=sl_your_key smartleadai-mcp
 
 The server speaks MCP over **stdio**. Started by hand it will simply wait for a
 client on stdin; that is expected.
+
+## Command line
+
+The same binary is an MCP server when run with no arguments, and a small helper
+CLI when given a subcommand.
+
+```bash
+smartleadai-mcp init       # interactive setup: verify the key, print client config
+smartleadai-mcp doctor     # check configuration and validate the key
+smartleadai-mcp config     # print effective configuration (credential redacted)
+smartleadai-mcp tools      # list tools with their safety classification
+smartleadai-mcp help
+```
+
+Start here:
+
+```bash
+npx -y smartleadai-mcp init
+```
+
+`init` verifies the key, asks which safety mode you want, then prints
+ready-to-paste config for Claude Desktop, Claude Code and Hermes. It offers to
+write a local `.env` (mode `0600`) but never overwrites an existing key.
+
+`doctor` diagnoses a broken setup:
+
+```
+✓ configuration  valid
+  key            sl_1************************9f2c
+  mode           readonly  (default — no writes, no credit spend)
+  credit spend   disabled
+✓ api key        accepted by Smartlead
+✓ tools          191 registered
+```
+
+Both validate the key against `GET /countries?limit=1` — free, read-only, and
+touching no contact data, so diagnosing a setup can never spend credits or pull
+a prospect record. Keys are only ever shown as first-four/last-four.
 
 ## Client configuration
 
@@ -151,6 +192,8 @@ await server.connect(new StdioServerTransport());
 | `SMARTLEAD_API_KEY` | **yes** | — | Read from the environment only. It can never be passed as a tool argument. |
 | `SMARTLEAD_CORE_BASE_URL` | no | `https://server.smartlead.ai/api/v1` | Core Smartlead host. |
 | `SMARTLEAD_PROSPECT_BASE_URL` | no | `https://prospect-api.smartlead.ai/api/v1/search-email-leads` | SmartProspect host. |
+| `SMARTLEAD_DELIVERY_BASE_URL` | no | `https://smartdelivery.smartlead.ai/api/v1` | Smart Delivery host. |
+| `SMARTLEAD_SENDERS_BASE_URL` | no | `https://smart-senders.smartlead.ai/api/v1` | Smart Senders host. |
 | `SMARTLEAD_MCP_MODE` | no | `readonly` | `readonly` \| `standard` \| `unrestricted`. |
 | `SMARTLEAD_MCP_ALLOW_CREDIT_SPEND` | no | `false` | Literal `true`/`false`. |
 | `SMARTLEAD_MCP_ALLOW_SEND` | no | `false` | Literal `true`/`false`. |
@@ -188,64 +231,36 @@ Rules that hold in **every** mode:
 
 ## Tool reference
 
-39 tools. Host `prospect` = `prospect-api.smartlead.ai`, host `core` =
-`server.smartlead.ai`.
+191 tools across four hosts. The full table would be unreadable here, so list
+them from the CLI instead — it prints each tool's safety classification:
 
-| Tool | Host | Method and route | Read-only | Spends credits | Remote mutation |
-| --- | --- | --- | --- | --- | --- |
-| `smartprospect_get_search_analytics` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/search-analytics` | yes | no | no |
-| `smartprospect_get_reply_analytics` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/reply-analytics` | yes | no | no |
-| `smartprospect_list_countries` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/countries` | yes | no | no |
-| `smartprospect_list_states` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/states` | yes | no | no |
-| `smartprospect_list_cities` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/cities` | yes | no | no |
-| `smartprospect_list_departments` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/departments` | yes | no | no |
-| `smartprospect_list_seniority_levels` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/levels` | yes | no | no |
-| `smartprospect_list_industries` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/industries` | yes | no | no |
-| `smartprospect_list_sub_industries` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/sub-industries` | yes | no | no |
-| `smartprospect_list_revenue_ranges` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/revenue` | yes | no | no |
-| `smartprospect_list_head_counts` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/head-counts` | yes | no | no |
-| `smartprospect_list_companies` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/company` | yes | no | no |
-| `smartprospect_list_domains` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/domain` | yes | no | no |
-| `smartprospect_list_job_titles` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/job-title` | yes | no | no |
-| `smartprospect_list_keywords` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/keywords` | yes | no | no |
-| `smartprospect_search_contacts` | prospect | `POST prospect-api.smartlead.ai/api/v1/search-email-leads/search-contacts` | yes | no | no |
-| `smartprospect_get_contacts` | prospect | `POST prospect-api.smartlead.ai/api/v1/search-email-leads/get-contacts` | yes | no | no |
-| `smartprospect_review_contacts` | prospect | `PATCH prospect-api.smartlead.ai/api/v1/search-email-leads/review-contacts/{filter_id}` | no | no | yes |
-| `smartprospect_list_saved_searches` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/search-filters/saved-searches` | yes | no | no |
-| `smartprospect_list_recent_searches` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/search-filters/recent-searches` | yes | no | no |
-| `smartprospect_list_fetched_searches` | prospect | `GET prospect-api.smartlead.ai/api/v1/search-email-leads/search-filters/fetched-searches` | yes | no | no |
-| `smartprospect_save_search` | prospect | `POST prospect-api.smartlead.ai/api/v1/search-email-leads/search-filters/save-search` | no | no | yes |
-| `smartprospect_update_saved_search` | prospect | `PUT prospect-api.smartlead.ai/api/v1/search-email-leads/search-filters/save-search/{id}` | no | no | yes |
-| `smartprospect_update_fetched_search` | prospect | `PUT prospect-api.smartlead.ai/api/v1/search-email-leads/search-filters/fetched-searches/{id}` | no | no | yes |
-| `smartprospect_find_emails` | prospect | `POST prospect-api.smartlead.ai/api/v1/search-email-leads/search-contacts/find-emails` | no | **yes** | yes |
-| `smartprospect_fetch_contacts` | prospect | `POST prospect-api.smartlead.ai/api/v1/search-email-leads/fetch-contacts` | no | **yes** | yes |
-| `smartlead_list_campaigns` | core | `GET server.smartlead.ai/api/v1/campaigns/` | yes | no | no |
-| `smartlead_get_campaign` | core | `GET server.smartlead.ai/api/v1/campaigns/{campaign_id}` | yes | no | no |
-| `smartlead_get_campaign_analytics` | core | `GET server.smartlead.ai/api/v1/campaigns/{campaign_id}/analytics` | yes | no | no |
-| `smartlead_create_campaign` | core | `POST server.smartlead.ai/api/v1/campaigns/create` | no | no | yes |
-| `smartlead_update_campaign_status` | core | `POST server.smartlead.ai/api/v1/campaigns/{campaign_id}/status` | no | no | yes |
-| `smartlead_get_campaign_leads` | core | `GET server.smartlead.ai/api/v1/campaigns/{campaign_id}/leads` | yes | no | no |
-| `smartlead_get_lead_by_email` | core | `GET server.smartlead.ai/api/v1/leads/` | yes | no | no |
-| `smartlead_list_lead_lists` | core | `GET server.smartlead.ai/api/v1/lead-list/` | yes | no | no |
-| `smartlead_add_leads_to_campaign` | core | `POST server.smartlead.ai/api/v1/campaigns/{campaign_id}/leads` | no | no | yes |
-| `smartlead_list_email_accounts` | core | `GET server.smartlead.ai/api/v1/email-accounts/` | yes | no | no |
-| `smartlead_get_domain_block_list` | core | `GET server.smartlead.ai/api/v1/leads/get-domain-block-list` | yes | no | no |
-| `smartlead_add_domain_to_block_list` | core | `POST server.smartlead.ai/api/v1/leads/add-domain-block-list` | no | no | yes |
-| `smartlead_remove_domain_from_block_list` | core | `DELETE server.smartlead.ai/api/v1/leads/delete-domain-block-list` | no | no | yes |
+```bash
+smartleadai-mcp tools              # all 191
+smartleadai-mcp tools campaign     # filter by substring
+```
 
-Additional gating beyond the table:
+| Host | Base URL | Tools | Prefix |
+| --- | --- | --- | --- |
+| SmartProspect | `prospect-api.smartlead.ai/api/v1/search-email-leads` | 26 | `smartprospect_` |
+| Core | `server.smartlead.ai/api/v1` | 131 | `smartlead_` |
+| Smart Delivery | `smartdelivery.smartlead.ai/api/v1` | 27 | `smartdelivery_` |
+| Smart Senders | `smart-senders.smartlead.ai/api/v1` | 7 | `smartsenders_` |
 
-- `smartlead_update_campaign_status` is treated as a **sending** operation when
-  `status` is `START` (unrestricted mode + `SMARTLEAD_MCP_ALLOW_SEND=true` +
-  `confirm_send: true`). `PAUSED` is an ordinary mutation. `STOPPED` is
-  permanent and is treated as destructive (unrestricted mode +
-  `SMARTLEAD_MCP_ALLOW_DESTRUCTIVE=true` + `confirm_destructive: true`).
-- `smartlead_remove_domain_from_block_list` is treated as **destructive**,
-  because deleting a suppression entry re-enables outreach to a recipient who
-  was blocked (often after a bounce or complaint).
-- `smartlead_add_leads_to_campaign` requires `confirm_import: true`. Enabling a
-  suppression, unsubscribe, duplicate, or community-bounce-list bypass also
-  requires destructive approval.
+By safety classification:
+
+| Classification | Tools | Gate |
+| --- | --- | --- |
+| Read-only | 113 | none — available in every mode |
+| Remote mutation | 78 | `standard` mode or above |
+| Sends email | 10 | `unrestricted` + `ALLOW_SEND` + `confirm_send` |
+| Destructive | 15 | `unrestricted` + `ALLOW_DESTRUCTIVE` + `confirm_destructive` |
+| Consumes credits | 2 | `ALLOW_CREDIT_SPEND` + `confirm_credit_spend` + preflight |
+
+Classification is reviewed per endpoint, not inferred from the HTTP verb.
+Smartlead serves 14 searches over `POST` — those are read-only. Several
+`DELETE` and `stop`/`suspend`/`block` routes are suppression-increasing and are
+deliberately **not** destructive, so the safe action is never harder to take
+than the dangerous one.
 
 Every tool returns the same envelope:
 
@@ -256,7 +271,7 @@ Every tool returns the same envelope:
   "credit_spending": false,
   "remote_mutation": false,
   "data": { "list": [] },
-  "pagination": { "scroll_id": "…", "filter_id": 327105, "total_count": 16064669, "returned": 25, "limit": 25 },
+  "pagination": { "scroll_id": "…", "filter_id": 327105, "total_count": 16064669 },
   "warnings": []
 }
 ```
@@ -517,14 +532,23 @@ Per-endpoint source pages, with the date each was checked, are listed in
 
 ## Known limitations
 
-- **Not full Smartlead API coverage.** SmartProspect is complete (26/26
-  documented endpoints). The core Smartlead surface is 13 operations; sequences,
-  webhooks, the master inbox, Smart Delivery, Smart Senders, clients, tags,
-  warmup configuration and mailbox management are intentionally absent from
-  0.1.0.
-- **No one-off sending, inbox replies, campaign duplication, lead deletion or
-  unsubscribe tools.** These are documented by Smartlead but are excluded from
-  this version by design; see `docs/endpoint-coverage.md`.
+- **Three documented endpoints are excluded.** `email-accounts/add-smtp` and
+  `add-oauth` require a mailbox password or OAuth refresh token in the request
+  body; a tool argument is relayed through the model and on to the model
+  provider, so no gate makes that safe — connect mailboxes in the Smartlead UI.
+  `campaigns/get-leads-history-bulk` documents a curl with an opaque path
+  segment that has no matching path parameter, so its route cannot be
+  determined without guessing. See `docs/endpoint-coverage.md`.
+- **Most tools are catalog-generated.** The 39 hand-written tools encode every
+  documented range, enum and cross-field rule (such as the `id`/`filter_id`
+  XOR). The other 152 are generated from the documentation's parameter
+  metadata: they validate names, types, presence, and any range or enum the
+  docs stated explicitly, but they cannot express cross-field rules. Invalid
+  combinations reach Smartlead and are rejected there.
+- **This server can send email.** With `unrestricted` mode plus
+  `SMARTLEAD_MCP_ALLOW_SEND=true`, 10 tools can put mail in a real recipient's
+  inbox, including `smartlead_utilities_send_single_email`. The gate stops
+  accidents, not a determined agent that has been given the flag.
 - **`fetch-contacts` elevated limit is unverifiable locally.** Smartlead
   documents 1–10000 "or 30000 for some users" without exposing which applies.
   The schema accepts up to 30000 and warns above 10000; the account's real

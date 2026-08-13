@@ -1,6 +1,6 @@
 # Security policy
 
-`@voriq/smartlead-mcp` is an **unofficial** MCP integration for Smartlead. It is
+`smartleadai-mcp` is an **unofficial** MCP integration for Smartlead. It is
 not affiliated with, endorsed by, or sponsored by Smartlead.ai. Do not report
 Smartlead platform vulnerabilities here — send those to Smartlead directly.
 

@@ -10,7 +10,7 @@ Initial implementation. **Not published.**
 
 ### Added
 
-- Stdio MCP server (`smartlead-mcp` / `npx -y @voriq/smartlead-mcp`) exposing 39
+- Stdio MCP server (`smartleadai-mcp` / `npx -y smartleadai-mcp`) exposing 39
   tools built from Smartlead's official API documentation.
 - **Complete SmartProspect coverage** — all 26 documented endpoints on
   `https://prospect-api.smartlead.ai/api/v1/search-email-leads`: search-contacts,

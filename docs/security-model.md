@@ -1,6 +1,6 @@
 # Security model
 
-This document explains what `@voriq/smartlead-mcp` defends against, what it
+This document explains what `smartleadai-mcp` defends against, what it
 deliberately does not, and which controls are structural rather than advisory.
 
 For reporting instructions and the user-facing summary, see

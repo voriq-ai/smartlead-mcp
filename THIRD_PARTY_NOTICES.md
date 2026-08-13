@@ -2,7 +2,7 @@
 
 ## Code provenance
 
-`@voriq/smartlead-mcp` is a clean-room implementation written from Smartlead's
+`smartleadai-mcp` is a clean-room implementation written from Smartlead's
 public official API documentation:
 
 - <https://api.smartlead.ai/introduction>
@@ -23,7 +23,7 @@ text must be added to this file in the same commit.
 
 ## Runtime dependencies
 
-These packages are installed alongside `@voriq/smartlead-mcp`. Their licences
+These packages are installed alongside `smartleadai-mcp`. Their licences
 apply to their own code, which is not vendored into this repository.
 
 | Package | Licence | Purpose |

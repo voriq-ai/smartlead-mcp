@@ -1,0 +1,52 @@
+name: Publish
+
+# Publishing is tag-driven and manual: pushing `vX.Y.Z` is the release action.
+# Nothing publishes on a branch push, so an accidental merge cannot ship.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # A published version cannot be replaced, so require an approval gate.
+    # Create this environment in repo settings and add required reviewers.
+    environment: npm-publish
+    permissions:
+      contents: read
+      # Required for npm provenance. Provenance needs a public repository and a
+      # supported CI provider; it cannot be produced from a developer machine.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - run: npm ci
+
+      # Guard against a tag that does not match the version being published.
+      - name: Check tag matches package version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag v$tag does not match package.json version $pkg"
+            exit 1
+          fi
+          echo "publishing version $pkg"
+
+      # Full gate: typecheck, lint, coverage, build, pack dry-run, and the
+      # clean-install MCP smoke test against the packed tarball.
+      - run: npm run verify
+
+      - name: Publish to npm with provenance
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

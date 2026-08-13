@@ -6,23 +6,28 @@ the package.
 
 ## 1. npm name check
 
-`@voriq/smartlead-mcp` was checked on **2026-08-14** and is unregistered:
+`smartleadai-mcp` was checked on **2026-08-14** and is unregistered:
 
 ```bash
-npm view @voriq/smartlead-mcp version
+npm view smartleadai-mcp version
 # npm error code E404
-# npm error 404 Not Found - GET https://registry.npmjs.org/@voriq%2fsmartlead-mcp
+# npm error 404 Not Found - GET https://registry.npmjs.org/smartleadai-mcp
 ```
 
-`npm view` is read-only: it neither reserves the name nor creates the scope.
-Re-run it immediately before publishing, because an unregistered name is not a
-reservation.
+`npm view` is read-only: it does not reserve the name. Re-run it immediately
+before publishing, because an unregistered name is not a reservation — and this
+one is unscoped, so nothing stops another publisher taking it first.
+
+Two adjacent names are already taken by unrelated publishers and are **not**
+this project: `smartlead-mcp` (0.2.2) and `smartlead-mcp-server` (1.2.1). Both
+cover campaign management only; neither implements SmartProspect. Do not
+describe this package in a way that implies continuity with either.
 
 ## 2. Prerequisites
 
-1. **The `@voriq` scope must exist on npm** and your account must be a member
-   with publish rights. Creating an organisation scope is a one-off action in
-   the npm web UI or via `npm org`. This has not been done.
+1. **No npm scope is required** — `smartleadai-mcp` is unscoped, so any
+   authenticated account may publish it. The trade-off is that the name carries
+   no publisher identity: see the trademark note in section 12.
 2. **Authenticate**: `npm login` (or a CI automation token in `NPM_TOKEN`).
    Verify with `npm whoami`.
 3. **Enable 2FA for publishes** on the npm account. For CI, use a granular
@@ -80,9 +85,9 @@ The tarball **must not** contain:
 Confirm no secret made it in:
 
 ```bash
-npm pack                       # produces voriq-smartlead-mcp-0.1.0.tgz
-tar -xOzf voriq-smartlead-mcp-*.tgz | grep -aiE 'api[_-]?key=[A-Za-z0-9]|BEGIN [A-Z ]*PRIVATE KEY'
-rm voriq-smartlead-mcp-*.tgz
+npm pack                       # produces smartleadai-mcp-0.1.0.tgz
+tar -xOzf smartleadai-mcp-*.tgz | grep -aiE 'api[_-]?key=[A-Za-z0-9]|BEGIN [A-Z ]*PRIVATE KEY'
+rm smartleadai-mcp-*.tgz
 ```
 
 That grep should print nothing. Documentation strings such as
@@ -92,28 +97,33 @@ That grep should print nothing. Documentation strings such as
 
 Publishing from a public GitHub repository via GitHub Actions with
 `--provenance` attaches a signed attestation linking the tarball to the commit
-and workflow that built it. Recommended once a repository exists:
+and workflow that built it. This is already wired up in
+[`.github/workflows/publish.yml`](../.github/workflows/publish.yml):
 
-```yaml
-# .github/workflows/publish.yml
-permissions:
-  contents: read
-  id-token: write   # required for provenance
-steps:
-  - uses: actions/checkout@v4
-  - uses: actions/setup-node@v4
-    with:
-      node-version: 20
-      registry-url: https://registry.npmjs.org
-  - run: npm ci
-  - run: npm run verify
-  - run: npm publish --access public --provenance
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-```
+- **Tag-driven.** It runs only on a `v*` tag push, so no branch merge can ever
+  ship a release by accident.
+- **Version guard.** It fails if the tag does not match `package.json` version.
+- **Full gate.** It runs `npm run verify` — typecheck, lint, coverage, build,
+  pack dry-run and the clean-install MCP smoke test — before publishing.
+- **Approval gate.** It targets the `npm-publish` environment, so a required
+  reviewer must approve the run. A published version cannot be replaced.
 
 Provenance requires a public repository and a supported CI provider. Publishing
 from a laptop cannot produce it.
+
+Two one-off setup steps are needed in repository settings before the first
+release, and neither can be done from a checkout:
+
+1. **Secret** `NPM_TOKEN` — an npm **granular access token** scoped to write
+   only `smartleadai-mcp`. Do not use a classic all-packages token.
+2. **Environment** `npm-publish` — create it and add yourself as a required
+   reviewer, so the publish job pauses for approval.
+
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs the same
+`npm run verify` on every push and pull request, across Node 20.19 and 22.
+Neither workflow uses a Smartlead credential: the test suite injects `fetch`,
+and the smoke test's tool calls are refused locally by the policy layer before
+any request would be made.
 
 ## 6. Release procedure
 
@@ -130,8 +140,10 @@ clean-install smoke deliberately stays in the preceding `npm run verify`: npm
 cannot recursively run a second `npm pack` while it is already executing the
 publish lifecycle.
 
-`publishConfig.access` is already `public`, which is required for a scoped
-package that should not be private.
+`publishConfig.access` is set to `public`. For an unscoped package that is
+already the default, so the setting — and the `--access public` flag — are
+belt-and-braces rather than load-bearing. They are kept so the package stays
+publishable as-is if it is ever moved under a scope.
 
 After publishing, tag and write release notes:
 
@@ -158,7 +170,7 @@ Never claim full Smartlead API coverage.
   `0.2.0-rc.1`. Use this for anything that changes gating behaviour, so existing
   installs are not upgraded into a looser default.
 
-Move a tag with `npm dist-tag add @voriq/smartlead-mcp@0.1.0 latest`.
+Move a tag with `npm dist-tag add smartleadai-mcp@0.1.0 latest`.
 
 ## 9. Post-publication smoke test
 
@@ -167,9 +179,9 @@ From a clean directory, on a machine that has never built this package:
 ```bash
 mkdir -p /tmp/smartlead-smoke && cd /tmp/smartlead-smoke
 npm init -y >/dev/null
-npm install @voriq/smartlead-mcp
+npm install smartleadai-mcp
 SMARTLEAD_API_KEY=dummy-key-for-startup-only \
-  npx --no-install smartlead-mcp <<'EOF'
+  npx --no-install smartleadai-mcp <<'EOF'
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"smoke","version":"0"}}}
 {"jsonrpc":"2.0","method":"notifications/initialized"}
 {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
@@ -183,7 +195,7 @@ makes no upstream request.
 Also verify the failure path:
 
 ```bash
-npx --no-install smartlead-mcp   # with SMARTLEAD_API_KEY unset
+npx --no-install smartleadai-mcp   # with SMARTLEAD_API_KEY unset
 # → "Configuration error: Invalid Smartlead MCP configuration — SMARTLEAD_API_KEY: ..." on stderr, exit 1
 ```
 
@@ -192,7 +204,7 @@ npx --no-install smartlead-mcp   # with SMARTLEAD_API_KEY unset
 Deprecate a version rather than unpublishing it:
 
 ```bash
-npm deprecate @voriq/smartlead-mcp@0.1.0 "Superseded by 0.2.0; upgrade for <reason>."
+npm deprecate smartleadai-mcp@0.1.0 "Superseded by 0.2.0; upgrade for <reason>."
 ```
 
 Unpublishing is only permissible within 72 hours and only if the package has no
@@ -218,3 +230,41 @@ Reports about the **Smartlead platform** go to Smartlead directly
 coordinate a Smartlead-side issue.
 
 When a fix ships, credit the reporter in the changelog unless they ask otherwise.
+
+## 12. Naming and trademark position
+
+The package is published unscoped as `smartleadai-mcp`. This was a deliberate
+choice for discoverability, and it carries a known, accepted risk that the
+maintainer should understand before publishing.
+
+**The risk.** `smartleadai` closely tracks the vendor's own brand
+(smartlead.ai), and an unscoped name contains no publisher identity. A user
+reading the registry listing cannot tell from the name alone that this is a
+third-party project. npm's [package name dispute policy][npm-disputes] is the
+mechanism a trademark owner would use, and names that read as the owner's own
+package are the category it most readily transfers.
+
+**What mitigates it.** These are load-bearing, not cosmetic — keep them:
+
+- The README opens with the non-affiliation notice, and it is repeated in
+  `package.json` `description`, `SECURITY.md`, `CHANGELOG.md` and
+  `THIRD_PARTY_NOTICES.md`. Every surface a user might land on says
+  "unofficial" before it says anything else.
+- No Smartlead logo or brand asset ships in the repository or the tarball.
+- The package never describes itself as official, endorsed, or a successor to
+  any other Smartlead client.
+- `THIRD_PARTY_NOTICES.md` states the nominative-use position explicitly.
+
+**Before publishing**, complete the outstanding Smartlead redistribution, terms
+of service, and trademark review. If that review advises against the name, the
+lower-risk alternatives — in decreasing order of exposure — are
+`smartlead-prospect-mcp` (descriptive, differentiates on SmartProspect
+coverage) or a scoped `@voriq-ai/smartleadai-mcp` (the scope identifies the
+publisher). Renaming is cheap before the first publish and expensive after,
+because every install, MCP client config and lockfile pins the old name.
+
+If a dispute is ever raised, respond promptly and cooperatively: publish under a
+new name, `npm deprecate` the old versions with a pointer to the replacement,
+and do not unpublish (see section 10).
+
+[npm-disputes]: https://docs.npmjs.com/policies/disputes

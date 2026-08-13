@@ -3,7 +3,7 @@
  * End-to-end smoke test of the *packed* package.
  *
  * Builds a tarball, installs it into a throwaway directory, launches the
- * installed `smartlead-mcp` binary over stdio, and drives it with a real MCP
+ * installed `smartleadai-mcp` binary over stdio, and drives it with a real MCP
  * client: initialize, tools/list, and two tools/call round trips.
  *
  * No network access to Smartlead is required or performed. The API key below is
@@ -22,7 +22,7 @@ const EXPECTED_TOOL_COUNT = 39;
 const SYNTHETIC_KEY = 'smoke-test-key-not-a-real-credential';
 
 const projectRoot = new URL('..', import.meta.url).pathname;
-const workdir = mkdtempSync(join(tmpdir(), 'smartlead-mcp-smoke-'));
+const workdir = mkdtempSync(join(tmpdir(), 'smartleadai-mcp-smoke-'));
 const checks = [];
 
 function check(label, condition, detail = '') {
@@ -55,17 +55,17 @@ try {
 
   const transport = new StdioClientTransport({
     command: 'node',
-    args: [join(workdir, 'node_modules', '.bin', 'smartlead-mcp')],
+    args: [join(workdir, 'node_modules', '.bin', 'smartleadai-mcp')],
     cwd: workdir,
     env: { PATH: process.env.PATH, SMARTLEAD_API_KEY: SYNTHETIC_KEY, SMARTLEAD_MCP_MODE: 'readonly' },
     stderr: 'pipe',
   });
 
-  const client = new Client({ name: 'smartlead-mcp-smoke', version: '0.0.0' });
+  const client = new Client({ name: 'smartleadai-mcp-smoke', version: '0.0.0' });
   await client.connect(transport);
 
   const serverInfo = client.getServerVersion();
-  check('initialize returns server info', serverInfo?.name === 'voriq-smartlead-mcp', JSON.stringify(serverInfo));
+  check('initialize returns server info', serverInfo?.name === 'smartleadai-mcp', JSON.stringify(serverInfo));
 
   const { tools } = await client.listTools();
   check(`tools/list returns ${EXPECTED_TOOL_COUNT} tools`, tools.length === EXPECTED_TOOL_COUNT, `got ${tools.length}`);

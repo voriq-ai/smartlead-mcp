@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 20.19 is the declared engines floor; 22 is what development uses.
+        node-version: ['20.19', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - run: npm ci
+
+      # `verify` covers typecheck, lint, coverage, build, pack dry-run and the
+      # clean-install MCP smoke test. No Smartlead credential is used or needed:
+      # the suite injects fetch, and the smoke test's calls are refused locally
+      # by the policy layer before any request is made.
+      - run: npm run verify

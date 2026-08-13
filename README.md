@@ -1,4 +1,4 @@
-# @voriq/smartlead-mcp
+# smartleadai-mcp
 
 > **Unofficial MCP integration for Smartlead. This project is not affiliated with, endorsed by, or sponsored by Smartlead.ai.**
 
@@ -65,14 +65,14 @@ targets routes that are not in Smartlead's current API reference (for example
 Run it directly with `npx` (no install step):
 
 ```bash
-SMARTLEAD_API_KEY=sl_your_key npx -y @voriq/smartlead-mcp
+SMARTLEAD_API_KEY=sl_your_key npx -y smartleadai-mcp
 ```
 
-Or install it and use the `smartlead-mcp` bin:
+Or install it and use the `smartleadai-mcp` bin:
 
 ```bash
-npm install -g @voriq/smartlead-mcp
-SMARTLEAD_API_KEY=sl_your_key smartlead-mcp
+npm install -g smartleadai-mcp
+SMARTLEAD_API_KEY=sl_your_key smartleadai-mcp
 ```
 
 The server speaks MCP over **stdio**. Started by hand it will simply wait for a
@@ -90,7 +90,7 @@ client on stdin; that is expected.
   "mcpServers": {
     "smartlead": {
       "command": "npx",
-      "args": ["-y", "@voriq/smartlead-mcp"],
+      "args": ["-y", "smartleadai-mcp"],
       "env": {
         "SMARTLEAD_API_KEY": "sl_your_key",
         "SMARTLEAD_MCP_MODE": "readonly"
@@ -109,7 +109,7 @@ Add this under `mcp_servers` in `~/.hermes/config.yaml` (use
 mcp_servers:
   smartlead:
     command: "npx"
-    args: ["-y", "@voriq/smartlead-mcp"]
+    args: ["-y", "smartleadai-mcp"]
     env:
       SMARTLEAD_API_KEY: "sl_your_key"
       SMARTLEAD_MCP_MODE: "readonly"
@@ -128,7 +128,7 @@ stdin/stdout:
 ```jsonc
 {
   "command": "npx",
-  "args": ["-y", "@voriq/smartlead-mcp"],
+  "args": ["-y", "smartleadai-mcp"],
   "transport": "stdio",
   "env": { "SMARTLEAD_API_KEY": "sl_your_key" }
 }
@@ -137,7 +137,7 @@ stdin/stdout:
 Programmatic use (for embedding in your own host):
 
 ```ts
-import { createServer, loadConfig } from '@voriq/smartlead-mcp';
+import { createServer, loadConfig } from 'smartleadai-mcp';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 const { server } = createServer(loadConfig());
@@ -498,7 +498,8 @@ for the full procedure. Summary:
    already preparing a publish.
 2. Confirm the packed file list contains only `dist/`, the public Markdown
    documentation, `.env.example`, and `package.json`.
-3. Confirm the `@voriq` npm scope exists and you are authenticated.
+3. Confirm you are authenticated on npm. The name is unscoped, so no scope
+   membership is needed — but nothing reserves it either until it is published.
 4. Tag, publish with `--access public` (optionally `--provenance`), then run a
    post-publication smoke test from a clean directory.
 

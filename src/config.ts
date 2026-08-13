@@ -5,7 +5,7 @@ export const DEFAULT_PROSPECT_BASE_URL = 'https://prospect-api.smartlead.ai/api/
 export const DEFAULT_TIMEOUT_MS = 30_000;
 export const DEFAULT_MAX_RETRIES = 2;
 
-export const SERVER_NAME = 'voriq-smartlead-mcp';
+export const SERVER_NAME = 'smartleadai-mcp';
 
 export type ServerMode = 'readonly' | 'standard' | 'unrestricted';
 

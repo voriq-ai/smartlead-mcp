@@ -1,0 +1,13 @@
+# The published contents are controlled by the "files" allowlist in package.json.
+# This file exists only as a defence-in-depth backstop so that a mis-edited
+# allowlist can never ship tests, fixtures, coverage output, or local secrets.
+tests/
+docs/
+coverage/
+src/
+scripts/
+.env
+.env.*
+!.env.example
+*.tgz
+*.log

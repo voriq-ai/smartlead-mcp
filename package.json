@@ -1,0 +1,79 @@
+{
+  "name": "@voriq/smartlead-mcp",
+  "version": "0.1.0",
+  "description": "Unofficial Model Context Protocol (MCP) server for the Smartlead API, covering the SmartProspect API family plus a safe minimum of core Smartlead operations. Not affiliated with, endorsed by, or sponsored by Smartlead.ai.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "smartlead",
+    "smartprospect",
+    "cold-email",
+    "lead-generation",
+    "prospecting",
+    "unofficial"
+  ],
+  "license": "MIT",
+  "author": "Voriq",
+  "homepage": "TODO: add repository URL before publishing",
+  "repository": {
+    "type": "git",
+    "url": "TODO: add repository URL before publishing"
+  },
+  "bugs": {
+    "url": "TODO: add issue tracker URL before publishing"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "bin": {
+    "smartlead-mcp": "dist/index.js"
+  },
+  "main": "./dist/server.js",
+  "types": "./dist/server.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && chmod +x dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run --project unit",
+    "test:watch": "vitest --project unit",
+    "test:coverage": "vitest run --project unit --coverage",
+    "test:live": "vitest run --project live",
+    "pack:check": "npm pack --dry-run",
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run build && npm run pack:check",
+    "prepublishOnly": "npm run verify"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^9.39.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^4.1.10"
+  }
+}

@@ -27,7 +27,9 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       reportsDirectory: 'coverage',
       include: ['src/**/*.ts'],
-      exclude: ['src/index.ts'],
+      // Entry points: argv dispatch and interactive prompts. Their pure logic
+      // (maskKey, isCliInvocation, clientSnippets) is covered in tests/unit/cli.test.ts.
+      exclude: ['src/index.ts', 'src/cli.ts'],
       thresholds: {
         lines: 80,
         functions: 80,

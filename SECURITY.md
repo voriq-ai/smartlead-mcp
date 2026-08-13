@@ -62,6 +62,8 @@ responsibility to have a lawful basis for processing it.
 
 Controls available to you:
 
+- Search previews default to `include_full_records: false`; callers must opt in
+  before names and personal fields are returned.
 - `include_full_records: false` on `smartprospect_search_contacts`,
   `smartprospect_get_contacts`, `smartprospect_fetch_contacts` and
   `smartprospect_find_emails` returns a de-identified summary: counts plus
@@ -87,9 +89,10 @@ They are gated by:
 2. `confirm_credit_spend: true` as a real boolean in the call, **and**
 3. a mode of `standard` or `unrestricted` (they are blocked outright in
    `readonly`), **and**
-4. for `fetch_contacts`, a free read-only preflight against
+4. for `fetch_contacts`, a mandatory free read-only preflight against
    `GET /search-analytics` that **rejects** — never silently reduces — a request
-   exceeding the available credit balance or the account's `maxSingleFetchLimit`.
+   exceeding the available credit balance, daily limit, or the account's
+   `maxSingleFetchLimit`. A failed or unrecognisable preflight fails closed.
 
 A refused call returns before any HTTP request is issued, so it cannot cost
 anything. Neither credit-consuming request is ever retried automatically.
@@ -98,22 +101,28 @@ anything. Neither credit-consuming request is ever retried automatically.
 
 `smartlead_update_campaign_status` with `status: "START"` activates a campaign
 and will cause email to be sent. It requires `unrestricted` mode,
-`SMARTLEAD_MCP_ALLOW_SEND=true` and `confirm_send: true`. `PAUSED` and `STOPPED`
-are treated as ordinary mutations and are available in `standard` mode, so the
-safe action is never harder to take than the dangerous one.
+`SMARTLEAD_MCP_ALLOW_SEND=true` and `confirm_send: true`. `PAUSED` is an ordinary
+mutation available in `standard` mode. `STOPPED` permanently stops a campaign
+and requires unrestricted mode, `SMARTLEAD_MCP_ALLOW_DESTRUCTIVE=true`, and
+`confirm_destructive: true`.
 
 Lead import (`smartlead_add_leads_to_campaign`) requires an explicit
 `campaign_id` and `confirm_import: true`, deduplicates emails locally, reports
 how many duplicates were removed, and **never** changes campaign status as a
-side effect.
+side effect. Enabling an unsubscribe, global-block-list, cross-campaign
+duplicate, or community-bounce-list bypass additionally requires destructive
+approval.
 
 No one-off email sending, inbox reply, or forward tool is implemented in 0.1.0.
 
 ## Destructive-operation protection
 
-`smartlead_remove_domain_from_block_list` is the only tool classified as
-destructive. It requires `unrestricted` mode,
-`SMARTLEAD_MCP_ALLOW_DESTRUCTIVE=true` and `confirm_destructive: true`.
+Destructive paths require `unrestricted` mode,
+`SMARTLEAD_MCP_ALLOW_DESTRUCTIVE=true` and `confirm_destructive: true`. They are:
+
+- permanently changing a campaign to `STOPPED`;
+- removing an entry from the domain block list; and
+- importing leads while bypassing suppression or bounce-list protections.
 
 Deleting a block-list entry re-enables outreach to a recipient who was suppressed
 — frequently after a hard bounce or a spam complaint — so it is treated as

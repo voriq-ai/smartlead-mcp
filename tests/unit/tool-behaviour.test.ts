@@ -151,15 +151,16 @@ describe('fetch_contacts credit preflight', () => {
     expect(mock.calls).toHaveLength(1);
   });
 
-  it('warns when the request may exceed the daily fetch limit but still proceeds', async () => {
-    const { envelope } = await run(
+  it('rejects when the request would exceed the daily fetch limit', async () => {
+    const { envelope, mock } = await run(
       'smartprospect_fetch_contacts',
       { filter_id: 1, limit: 100, confirm_credit_spend: true },
       permissiveOverrides,
-      [analyticsReply(10_000, 5000, 120, 90), { json: { success: true, data: { list: [] } } }],
+      [analyticsReply(10_000, 5000, 120, 90)],
     );
-    expect(envelope.ok).toBe(true);
-    expect(envelope.warnings.join(' ')).toContain('daily fetch limit');
+    expect(envelope.ok).toBe(false);
+    expect(envelope.error?.code).toBe('daily_fetch_limit_exceeded');
+    expect(mock.calls).toHaveLength(1);
   });
 
   it('never sends more than the requested quantity', async () => {
@@ -172,35 +173,35 @@ describe('fetch_contacts credit preflight', () => {
     expect(mock.calls[1]!.body).toEqual({ filter_id: 1, limit: 7, visual_limit: 5 });
   });
 
-  it('proceeds with a warning when the preflight itself fails', async () => {
+  it('fails closed when the preflight itself fails', async () => {
     const { envelope, mock } = await run(
       'smartprospect_fetch_contacts',
       { filter_id: 1, limit: 5, confirm_credit_spend: true },
       permissiveOverrides,
-      [{ status: 500, json: { message: 'analytics down' } }, { status: 500, json: { message: 'analytics down' } }, { status: 500, json: { message: 'analytics down' } }, { json: { success: true, data: { list: [] } } }],
+      [{ status: 500, json: { message: 'analytics down' } }, { status: 500, json: { message: 'analytics down' } }, { status: 500, json: { message: 'analytics down' } }],
     );
-    expect(envelope.ok).toBe(true);
-    expect(envelope.warnings.join(' ')).toContain('preflight could not be completed');
-    expect(mock.calls.at(-1)!.url).toContain('/fetch-contacts');
+    expect(envelope.ok).toBe(false);
+    expect(envelope.error?.code).toBe('credit_preflight_failed');
+    expect(mock.calls.every((call) => call.url.includes('/search-analytics'))).toBe(true);
   });
 
-  it('skips the preflight when explicitly asked', async () => {
-    const { mock } = await run(
+  it('fails closed when the preflight has no recognisable limits', async () => {
+    const { envelope, mock } = await run(
       'smartprospect_fetch_contacts',
-      { filter_id: 1, limit: 5, confirm_credit_spend: true, skip_credit_preflight: true },
+      { filter_id: 1, limit: 5, confirm_credit_spend: true },
       permissiveOverrides,
-      [{ json: { success: true, data: { list: [] } } }],
+      [{ json: { success: true, data: {} } }],
     );
+    expect(envelope.error?.code).toBe('credit_preflight_unusable');
     expect(mock.calls).toHaveLength(1);
-    expect(mock.calls[0]!.url).toContain('/fetch-contacts');
   });
 
   it('warns when the limit exceeds the standard documented maximum', async () => {
     const { envelope } = await run(
       'smartprospect_fetch_contacts',
-      { filter_id: 1, limit: 20_000, confirm_credit_spend: true, skip_credit_preflight: true },
+      { filter_id: 1, limit: 20_000, confirm_credit_spend: true },
       permissiveOverrides,
-      [{ json: { success: true, data: { list: [] } } }],
+      [analyticsReply(30_000, 30_000, 30_000), { json: { success: true, data: { list: [] } } }],
     );
     expect(envelope.warnings.join(' ')).toContain('exceeds the standard documented maximum');
   });
@@ -234,6 +235,16 @@ describe('sending and destructive gating', () => {
       allowSend: true,
     });
     expect(envelope.error?.code).toBe('send_unconfirmed');
+    expect(mock.calls).toHaveLength(0);
+  });
+
+  it('blocks permanent STOPPED without destructive approval', async () => {
+    const { envelope, mock } = await run(
+      'smartlead_update_campaign_status',
+      { campaign_id: 1, status: 'STOPPED' },
+      { mode: 'standard' },
+    );
+    expect(envelope.error?.code).toBe('mode_standard');
     expect(mock.calls).toHaveLength(0);
   });
 
@@ -290,6 +301,21 @@ describe('lead import', () => {
     expect(mock.calls).toHaveLength(1);
     expect(mock.calls[0]!.url).not.toContain('/status');
   });
+
+  it('blocks suppression-bypassing imports without destructive approval', async () => {
+    const { envelope, mock } = await run(
+      'smartlead_add_leads_to_campaign',
+      {
+        campaign_id: 1,
+        confirm_import: true,
+        lead_list: [{ email: 'person@example.com' }],
+        settings: { ignore_unsubscribe_list: true },
+      },
+      { mode: 'standard' },
+    );
+    expect(envelope.error?.code).toBe('mode_standard');
+    expect(mock.calls).toHaveLength(0);
+  });
 });
 
 describe('dedupeLeads', () => {
@@ -318,10 +344,20 @@ describe('include_full_records', () => {
     country: 'United Kingdom',
   };
 
-  it('returns full records by default', async () => {
+  it('omits personal fields by default for preview searches', async () => {
     const { envelope } = await run('smartprospect_search_contacts', { limit: 1 }, permissiveOverrides, [
       { json: { success: true, data: { list: [contactRow], filter_id: 1, total_count: 1 } } },
     ]);
+    expect(JSON.stringify(envelope.data)).not.toContain('ada@example.com');
+  });
+
+  it('returns full preview records only when explicitly requested', async () => {
+    const { envelope } = await run(
+      'smartprospect_search_contacts',
+      { limit: 1, include_full_records: true },
+      permissiveOverrides,
+      [{ json: { success: true, data: { list: [contactRow], filter_id: 1, total_count: 1 } } }],
+    );
     expect(JSON.stringify(envelope.data)).toContain('ada@example.com');
   });
 
@@ -396,8 +432,9 @@ describe('summarizeCredits', () => {
     });
   });
 
-  it('returns undefined for a non-object payload', () => {
+  it('returns undefined for a non-object or unrecognisable payload', () => {
     expect(summarizeCredits(null)).toBeUndefined();
+    expect(summarizeCredits({})).toBeUndefined();
   });
 });
 
@@ -407,9 +444,13 @@ describe('capability declarations', () => {
     expect(creditTools).toEqual(['smartprospect_fetch_contacts', 'smartprospect_find_emails']);
   });
 
-  it('marks exactly one destructive tool', () => {
+  it('marks all tools with potentially destructive modes', () => {
     const destructive = allTools.filter((t) => t.capability.destructive).map((t) => t.name);
-    expect(destructive).toEqual(['smartlead_remove_domain_from_block_list']);
+    expect(destructive.sort()).toEqual([
+      'smartlead_add_leads_to_campaign',
+      'smartlead_remove_domain_from_block_list',
+      'smartlead_update_campaign_status',
+    ]);
   });
 
   it('marks exactly one sending tool', () => {

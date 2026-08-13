@@ -51,7 +51,9 @@ export function redactValue<T>(value: T, secrets: readonly string[] = []): T {
 }
 
 function redactValueInner(value: unknown, secrets: readonly string[], depth: number): unknown {
-  if (depth > 12) return value;
+  // Never return an uninspected deep value: a credential nested below the
+  // recursion cap would otherwise bypass redaction entirely.
+  if (depth > 12) return '[REDACTED: maximum nesting depth exceeded]';
   if (typeof value === 'string') return redactSecrets(value, secrets);
   if (Array.isArray(value)) return value.map((v) => redactValueInner(v, secrets, depth + 1));
   if (value && typeof value === 'object') {

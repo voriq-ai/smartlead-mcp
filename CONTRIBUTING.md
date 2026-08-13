@@ -24,7 +24,7 @@ specific places.
 
 ```bash
 npm install
-npm run verify   # typecheck + lint + tests + build + pack dry-run
+npm run verify   # typecheck + lint + coverage + build + pack + clean-install MCP smoke
 ```
 
 Node 20.11+ is required.

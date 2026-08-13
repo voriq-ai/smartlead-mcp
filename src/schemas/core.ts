@@ -117,6 +117,9 @@ export const updateCampaignStatusSchema = z.strictObject({
   confirm_send: confirmationFlag(
     'Must be true when status is START. Acknowledges that activating the campaign will send email.',
   ),
+  confirm_destructive: confirmationFlag(
+    'Must be true when status is STOPPED. Acknowledges that permanently stopping a campaign cannot be undone.',
+  ),
 });
 
 /** Documented maximum number of leads per add-leads request. */
@@ -162,6 +165,9 @@ export const addLeadsToCampaignSchema = z.strictObject({
     .describe('Smartlead validation and duplicate-handling settings.'),
   confirm_import: confirmationFlag(
     'Must be true. Acknowledges that leads will be written into the target campaign.',
+  ),
+  confirm_destructive: confirmationFlag(
+    'Must be true when any suppression or bounce-list validation bypass is enabled in settings.',
   ),
 });
 

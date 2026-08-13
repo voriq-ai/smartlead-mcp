@@ -59,7 +59,7 @@
     "test:coverage": "vitest run --project unit --coverage",
     "test:live": "vitest run --project live",
     "pack:check": "npm pack --dry-run",
-    "verify": "npm run typecheck && npm run lint && npm run test && npm run build && npm run pack:check",
+    "verify": "npm run typecheck && npm run lint && npm run test:coverage && npm run build && npm run pack:check && npm run smoke:package",
     "prepublishOnly": "npm run verify",
     "smoke:package": "node scripts/smoke-installed-package.mjs"
   },
@@ -76,5 +76,8 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0",
     "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "esbuild": "^0.28.2"
   }
 }

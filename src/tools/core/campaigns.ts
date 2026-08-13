@@ -76,16 +76,18 @@ const updateCampaignStatus = defineTool({
   title: 'Smartlead: update campaign status',
   summary: 'Start, pause or stop a campaign.',
   notes: [
-    'PAUSED and STOPPED are ordinary mutations and work in standard mode.',
+    'PAUSED is an ordinary mutation and works in standard mode.',
     'START activates the campaign and will cause email to be sent: it requires unrestricted mode, SMARTLEAD_MCP_ALLOW_SEND=true and confirm_send: true.',
+    'STOPPED permanently stops the campaign and cannot be undone: it requires unrestricted mode, SMARTLEAD_MCP_ALLOW_DESTRUCTIVE=true and confirm_destructive: true.',
     'Smartlead documents the activation value as "START", not "ACTIVE".',
   ],
   // Worst case for documentation and annotations; narrowed per call below.
-  capability: capability({ remoteMutation: true, sending: true }),
-  resolveCapability: (args: { status: string }) =>
-    args.status === 'START'
-      ? capability({ remoteMutation: true, sending: true })
-      : capability({ remoteMutation: true }),
+  capability: capability({ remoteMutation: true, sending: true, destructive: true }),
+  resolveCapability: (args: { status: string }) => {
+    if (args.status === 'START') return capability({ remoteMutation: true, sending: true });
+    if (args.status === 'STOPPED') return capability({ remoteMutation: true, destructive: true });
+    return capability({ remoteMutation: true });
+  },
   endpoint: { host: 'core', method: 'POST', route: '/campaigns/{campaign_id}/status' },
   inputSchema: schema.updateCampaignStatusSchema,
   handler: async (args, ctx) => {

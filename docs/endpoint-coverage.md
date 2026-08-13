@@ -108,7 +108,9 @@ Documented core constraints implemented: `add-leads` max 400 leads and max 200
 custom fields per lead; campaign lead pagination `limit` 1–100; email account
 pagination `limit` 1–100; block-list `limit` 1–1000; campaign status values
 restricted to `START` / `PAUSED` / `STOPPED` (Smartlead documents `START`, not
-`ACTIVE`).
+`ACTIVE`). `STOPPED` is permanently destructive. Lead imports that opt out of
+unsubscribe, global-block-list, cross-campaign duplicate, or community-bounce
+checks require destructive approval in addition to import confirmation.
 
 ### Deliberate classification deviation
 

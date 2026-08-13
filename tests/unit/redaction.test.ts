@@ -52,6 +52,14 @@ describe('redactValue', () => {
     expect(out.api_key).toBe(REDACTED);
     expect(out.keep).toBe('value');
   });
+
+  it('fails closed at the maximum nesting depth', () => {
+    let nested: Record<string, unknown> = { api_key: TEST_API_KEY };
+    for (let i = 0; i < 20; i += 1) nested = { nested };
+    const out = redactValue(nested, [TEST_API_KEY]);
+    expect(JSON.stringify(out)).not.toContain(TEST_API_KEY);
+    expect(JSON.stringify(out)).toContain('maximum nesting depth exceeded');
+  });
 });
 
 describe('summarizeBody', () => {

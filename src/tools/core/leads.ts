@@ -59,9 +59,19 @@ const addLeadsToCampaign = defineTool({
     `Creates remote state. Blocked in readonly mode. Requires an explicit campaign_id and confirm_import: true. Maximum ${schema.ADD_LEADS_MAX} leads per call.`,
     'Duplicate emails are removed locally (case-insensitive, trimmed) before the request and the number removed is reported.',
     'Never activates the campaign — use smartlead_update_campaign_status separately.',
+    'Bypassing the global block list, unsubscribe list, duplicate protection or community bounce list is classified as destructive and requires unrestricted mode plus destructive confirmation.',
     'Never auto-retried: a retry could import leads twice.',
   ],
-  capability: capability({ remoteMutation: true, leadImport: true }),
+  capability: capability({ remoteMutation: true, leadImport: true, destructive: true }),
+  resolveCapability: (args: { settings?: Record<string, boolean> }) => {
+    const bypassesSafety = Boolean(
+      args.settings?.ignore_global_block_list ||
+        args.settings?.ignore_unsubscribe_list ||
+        args.settings?.ignore_duplicate_leads_in_other_campaign ||
+        args.settings?.ignore_community_bounce_list,
+    );
+    return capability({ remoteMutation: true, leadImport: true, destructive: bypassesSafety });
+  },
   endpoint: { host: 'core', method: 'POST', route: '/campaigns/{campaign_id}/leads' },
   inputSchema: schema.addLeadsToCampaignSchema,
   handler: async (args, ctx) => {

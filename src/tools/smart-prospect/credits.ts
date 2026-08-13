@@ -80,23 +80,31 @@ const fetchContacts = defineTool({
       );
     }
 
-    const preflight = args.skip_credit_preflight
-      ? { performed: false as const, reason: 'skip_credit_preflight was true' }
-      : await runCreditPreflight(ctx);
+    const preflight = await runCreditPreflight(ctx);
 
     if (preflight.performed && preflight.credits) {
       assertWithinCredits(requested, args.limit, preflight.credits);
       const daily = preflight.credits.maxDailyFetchLimit;
       const today = preflight.credits.leadsFoundToday;
       if (daily !== undefined && today !== undefined && today + requested > daily) {
-        warnings.push(
-          `This request (${requested}) plus today's usage (${today}) may exceed the account daily fetch limit of ${daily}.`,
+        throw new ToolRefusal(
+          'daily_fetch_limit_exceeded',
+          `Requested ${requested} contact(s) plus today's usage of ${today} exceeds the account daily fetch limit of ${daily}. The paid request was not sent.`,
+          [`Wait for the daily limit to reset or request ${Math.max(daily - today, 0)} contact(s) or fewer.`],
         );
       }
     } else if (preflight.performed) {
-      warnings.push('Credit preflight returned no recognisable credit figures; proceeding as confirmed.');
-    } else if (!args.skip_credit_preflight) {
-      warnings.push(`Credit preflight could not be completed (${preflight.reason}); proceeding as confirmed.`);
+      throw new ToolRefusal(
+        'credit_preflight_unusable',
+        'Credit preflight returned no recognisable credit or account-limit figures. The paid request was not sent.',
+        ['Retry after Smartlead search analytics is available and returns account limits.'],
+      );
+    } else {
+      throw new ToolRefusal(
+        'credit_preflight_failed',
+        `Credit preflight could not be completed (${preflight.reason}). The paid request was not sent.`,
+        ['Retry after the read-only SmartProspect search analytics endpoint is available.'],
+      );
     }
 
     const body: Record<string, unknown> = { filter_id: args.filter_id };

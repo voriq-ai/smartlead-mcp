@@ -176,7 +176,9 @@ export const searchContactsSchema = z.strictObject({
     .optional()
     .describe('Scroll ID returned by a previous search, to fetch the next page.'),
   ...searchFilterFields,
-  include_full_records: includeFullRecords,
+  include_full_records: includeFullRecords.default(false).describe(
+    'Return complete preview records including names and personal fields. Defaults to false for privacy; opt in explicitly when those fields are needed.',
+  ),
 });
 
 export const saveSearchSchema = z.strictObject({
@@ -287,12 +289,6 @@ export const fetchContactsSchema = z
     confirm_credit_spend: confirmationFlag(
       'Must be true. Acknowledges that this call can consume SmartProspect credits.',
     ),
-    skip_credit_preflight: z
-      .boolean()
-      .default(false)
-      .describe(
-        'Skip the read-only credit preflight check. Only set to true if the preflight call itself is failing.',
-      ),
     include_full_records: includeFullRecords,
   })
   .refine((value) => (value.id === undefined) !== (value.limit === undefined), {

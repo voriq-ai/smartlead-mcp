@@ -30,9 +30,9 @@ describe('search-contacts schema', () => {
     expect(sp.searchContactsSchema.safeParse({ limit: 1, notARealFilter: 'x' }).success).toBe(false);
   });
 
-  it('defaults include_full_records to true', () => {
+  it('de-identifies search previews by default', () => {
     const parsed = sp.searchContactsSchema.parse({ limit: 1 });
-    expect(parsed.include_full_records).toBe(true);
+    expect(parsed.include_full_records).toBe(false);
   });
 });
 
@@ -141,6 +141,17 @@ describe('fetch-contacts schema', () => {
 
   it('rejects a non-positive filter_id', () => {
     expect(sp.fetchContactsSchema.safeParse({ filter_id: 0, limit: 1 }).success).toBe(false);
+  });
+
+  it('does not permit bypassing the mandatory credit preflight', () => {
+    expect(
+      sp.fetchContactsSchema.safeParse({
+        filter_id: 1,
+        limit: 1,
+        confirm_credit_spend: true,
+        skip_credit_preflight: true,
+      }).success,
+    ).toBe(false);
   });
 });
 

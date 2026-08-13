@@ -123,9 +123,9 @@ quantity with `availableCredits.available` and `maxSingleFetchLimit`. If either
 is exceeded the call is **rejected with an explanation**, never silently reduced;
 silently reducing would spend credits while returning less than asked for. The
 preflight state is returned in `data.credit_preflight` so the caller can see what
-was checked. `maxDailyFetchLimit` produces a warning rather than a refusal,
-because Smartlead's `leadsFoundToday` semantics are not documented precisely
-enough to refuse on without risking false rejections.
+was checked. `maxDailyFetchLimit` is also enforced against `leadsFoundToday`.
+The preflight cannot be skipped and fails closed if analytics is unavailable or
+does not contain recognisable credit/account-limit fields.
 
 **Layer 5 — no retries.** `ProspectClient.findEmails()` and `fetchContacts()`
 pass `retryable: false`. Retries are enabled only for GET. A retried paid POST
@@ -143,10 +143,14 @@ sent, and only when `status` is `START`.
 - The tool declares `sending: true` as its worst case, which is what appears in
   the description and in the MCP `annotations`.
 - `resolveCapability()` narrows the enforced capability per call: `START` is
-  gated as sending; `PAUSED` and `STOPPED` are ordinary mutations.
+  gated as sending, `STOPPED` as destructive, and `PAUSED` as an ordinary
+  mutation.
 - The asymmetry is deliberate: pausing a runaway campaign must never be harder
   than starting one. `PAUSED` works in `standard` mode; `START` needs
   `unrestricted` + `SMARTLEAD_MCP_ALLOW_SEND=true` + `confirm_send: true`.
+- `STOPPED` is permanent per Smartlead's documentation, so it needs
+  `unrestricted` + `SMARTLEAD_MCP_ALLOW_DESTRUCTIVE=true` +
+  `confirm_destructive: true`.
 - The result envelope's `warnings` state plainly that the campaign will begin
   sending.
 

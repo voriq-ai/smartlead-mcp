@@ -70,7 +70,7 @@ export function summarizeCredits(data: unknown): CreditSummary | undefined {
     maxSingleFetchLimit: asNumber(analytics.maxSingleFetchLimit),
     leadsFoundToday: asNumber(analytics.leadsFoundToday),
   };
-  return summary;
+  return Object.values(summary).some((value) => value !== undefined) ? summary : undefined;
 }
 
 export const analyticsTools = toolList(getSearchAnalytics, getReplyAnalytics);

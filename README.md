@@ -235,11 +235,15 @@ Additional gating beyond the table:
 
 - `smartlead_update_campaign_status` is treated as a **sending** operation when
   `status` is `START` (unrestricted mode + `SMARTLEAD_MCP_ALLOW_SEND=true` +
-  `confirm_send: true`). `PAUSED` and `STOPPED` are ordinary mutations.
+  `confirm_send: true`). `PAUSED` is an ordinary mutation. `STOPPED` is
+  permanent and is treated as destructive (unrestricted mode +
+  `SMARTLEAD_MCP_ALLOW_DESTRUCTIVE=true` + `confirm_destructive: true`).
 - `smartlead_remove_domain_from_block_list` is treated as **destructive**,
   because deleting a suppression entry re-enables outreach to a recipient who
   was blocked (often after a bounce or complaint).
-- `smartlead_add_leads_to_campaign` requires `confirm_import: true`.
+- `smartlead_add_leads_to_campaign` requires `confirm_import: true`. Enabling a
+  suppression, unsubscribe, duplicate, or community-bounce-list bypass also
+  requires destructive approval.
 
 Every tool returns the same envelope:
 
@@ -276,7 +280,8 @@ mirror that split.
 
 **3. Search previews.** Free. Returns a page of candidates plus the `filter_id`
 you will need later, the `total_count` of matches, and a `scroll_id` for the
-next page.
+next page. Preview records are de-identified by default; set
+`include_full_records: true` only when names and personal fields are needed.
 
 ```jsonc
 // smartprospect_search_contacts
@@ -380,8 +385,8 @@ Credit-consuming tools are gated at three independent layers:
 Neither credit-consuming request is **ever** retried automatically. Retries are
 enabled only for safe idempotent GETs.
 
-To skip the preflight (for example if the analytics endpoint is failing), pass
-`skip_credit_preflight: true`. The confirmation requirements still apply.
+The preflight cannot be skipped. If analytics is unavailable or does not return
+recognisable credit and account-limit fields, the paid request fails closed.
 
 ## Error handling
 
@@ -520,9 +525,9 @@ Per-endpoint source pages, with the date each was checked, are listed in
   documents 1–10000 "or 30000 for some users" without exposing which applies.
   The schema accepts up to 30000 and warns above 10000; the account's real
   `maxSingleFetchLimit` from the preflight is what is actually enforced.
-- **The daily fetch limit produces a warning, not a refusal.** Smartlead's
-  `leadsFoundToday` and `maxDailyFetchLimit` fields are not documented precisely
-  enough to refuse on safely without risking false rejections.
+- **Daily fetch limits are enforced from analytics.** If the requested quantity
+  plus `leadsFoundToday` exceeds `maxDailyFetchLimit`, the paid request is
+  refused locally.
 - **Undocumented maximums are guarded, not derived.** A few lookup endpoints
   document a default but no maximum; this package applies a client-side bound
   (noted in `docs/endpoint-coverage.md`) rather than inventing a documented one.
@@ -532,9 +537,10 @@ Per-endpoint source pages, with the date each was checked, are listed in
 - **Response shapes are passed through.** Smartlead's response envelopes vary
   between endpoint families; tools unwrap the common `{ success, message, data }`
   wrapper but do not otherwise normalise upstream field names.
-- **No live-verified endpoints.** Every route was implemented and tested against
-  the official documentation and mocked responses. No live Smartlead account was
-  used, so upstream behaviour has not been observed end to end.
+- **Limited live verification.** Independent review exercised search analytics,
+  countries, and a one-result filtered contact search through the assembled MCP
+  server. The account credit balance was unchanged. Mutations and paid endpoints
+  remain mocks-only by design.
 
 ## Licence
 

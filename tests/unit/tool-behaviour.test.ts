@@ -444,18 +444,49 @@ describe('capability declarations', () => {
     expect(creditTools).toEqual(['smartprospect_fetch_contacts', 'smartprospect_find_emails']);
   });
 
-  it('marks all tools with potentially destructive modes', () => {
-    const destructive = allTools.filter((t) => t.capability.destructive).map((t) => t.name);
-    expect(destructive.sort()).toEqual([
+  it('classifies the known destructive endpoints', () => {
+    const destructive = new Set(allTools.filter((t) => t.capability.destructive).map((t) => t.name));
+    for (const name of [
       'smartlead_add_leads_to_campaign',
       'smartlead_remove_domain_from_block_list',
       'smartlead_update_campaign_status',
-    ]);
+      'smartlead_campaigns_delete',
+      'smartlead_leads_unsubscribe',
+      'smartlead_email_accounts_delete',
+      'smartsenders_place_order',
+    ]) {
+      expect(destructive.has(name), name).toBe(true);
+    }
+    // Suppression-increasing actions must NOT be destructive, or the safe action
+    // becomes harder to take than the dangerous one.
+    for (const name of ['smartlead_inbox_block_domains', 'smartlead_email_accounts_suspend']) {
+      expect(destructive.has(name), name).toBe(false);
+    }
   });
 
-  it('marks exactly one sending tool', () => {
-    const sending = allTools.filter((t) => t.capability.sending).map((t) => t.name);
-    expect(sending).toEqual(['smartlead_update_campaign_status']);
+  it('classifies the known sending endpoints', () => {
+    const sending = new Set(allTools.filter((t) => t.capability.sending).map((t) => t.name));
+    for (const name of [
+      'smartlead_update_campaign_status',
+      'smartlead_utilities_send_single_email',
+      'smartlead_campaigns_reply_email_thread',
+      'smartlead_campaigns_forward_email',
+      'smartlead_campaigns_send_test_email',
+    ]) {
+      expect(sending.has(name), name).toBe(true);
+    }
+    // Smartlead serves several searches over POST; those are reads, not sends.
+    for (const name of ['smartlead_inbox_get_scheduled', 'smartlead_inbox_get_unread']) {
+      expect(sending.has(name), name).toBe(false);
+    }
+  });
+
+  it('never accepts a third-party credential as a tool argument', () => {
+    for (const tool of allTools) {
+      for (const key of Object.keys(tool.inputSchema.shape ?? {})) {
+        expect(/api_?key|apikey|token|secret|password/i.test(key), `${tool.name}.${key}`).toBe(false);
+      }
+    }
   });
 
   it('blocks every non-read-only tool in readonly mode', async () => {

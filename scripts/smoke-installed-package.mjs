@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
 
-const EXPECTED_TOOL_COUNT = 39;
+const EXPECTED_TOOL_COUNT = 191;
 const SYNTHETIC_KEY = 'smoke-test-key-not-a-real-credential';
 
 const projectRoot = new URL('..', import.meta.url).pathname;

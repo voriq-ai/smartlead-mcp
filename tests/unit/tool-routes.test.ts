@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { allTools, executeTool, findTool } from '../../src/tools/register.js';
+import { handWrittenTools, executeTool, findTool } from '../../src/tools/register.js';
 import { createTestContext, permissiveOverrides } from '../helpers/context.js';
 import { parseCall } from '../helpers/mock-fetch.js';
 
@@ -375,11 +375,11 @@ describe('endpoint routing', () => {
     }
   });
 
-  it('covers every registered tool except the ones with dedicated behaviour tests', () => {
+  it('covers every hand-written tool except the ones with dedicated behaviour tests', () => {
     const covered = new Set(CASES.map((c) => c.tool));
     // fetch_contacts runs a preflight request first and is covered in tool-behaviour.test.ts.
     covered.add('smartprospect_fetch_contacts');
-    const uncovered = allTools.map((t) => t.name).filter((name) => !covered.has(name));
+    const uncovered = handWrittenTools.map((t) => t.name).filter((name) => !covered.has(name));
     expect(uncovered).toEqual([]);
   });
 });

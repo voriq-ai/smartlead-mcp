@@ -3,6 +3,8 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { evaluatePolicy } from '../security/policy.js';
 import { smartProspectTools } from './smart-prospect/index.js';
 import { coreTools } from './core/index.js';
+import { toolsFromCatalog } from './from-catalog.js';
+import { CATALOG } from '../catalog/endpoints.js';
 import {
   buildDescription,
   envelopeOutputSchema,
@@ -14,7 +16,16 @@ import {
 import type { AnyToolDefinition, ToolContext } from './types.js';
 
 /** Every tool this server exposes, SmartProspect first. */
-export const allTools: AnyToolDefinition[] = [...smartProspectTools, ...coreTools];
+/**
+ * Hand-written tools encode cross-field rules and documented constraints the
+ * catalog factory cannot express. Catalog tools cover the remaining documented
+ * surface. Hand-written definitions win on name collision.
+ */
+export const handWrittenTools: AnyToolDefinition[] = [...smartProspectTools, ...coreTools];
+
+export const catalogTools: AnyToolDefinition[] = toolsFromCatalog(CATALOG);
+
+export const allTools: AnyToolDefinition[] = [...handWrittenTools, ...catalogTools];
 
 export function findTool(name: string): AnyToolDefinition | undefined {
   return allTools.find((tool) => tool.name === name);

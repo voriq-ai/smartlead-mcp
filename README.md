@@ -496,11 +496,10 @@ for the full procedure. Summary:
    clean installed-package MCP smoke test. `prepublishOnly` repeats every check
    except the nested pack/install smoke, which npm cannot run recursively while
    already preparing a publish.
-2. Replace the `TODO` repository, homepage and bugs URLs in `package.json`.
-3. Confirm the packed file list contains only `dist/`, the public Markdown
+2. Confirm the packed file list contains only `dist/`, the public Markdown
    documentation, `.env.example`, and `package.json`.
-4. Confirm the `@voriq` npm scope exists and you are authenticated.
-5. Tag, publish with `--access public` (optionally `--provenance`), then run a
+3. Confirm the `@voriq` npm scope exists and you are authenticated.
+4. Tag, publish with `--access public` (optionally `--provenance`), then run a
    post-publication smoke test from a clean directory.
 
 ## Official Smartlead documentation

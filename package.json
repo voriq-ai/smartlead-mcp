@@ -14,13 +14,13 @@
   ],
   "license": "MIT",
   "author": "Voriq",
-  "homepage": "TODO: add repository URL before publishing",
+  "homepage": "https://github.com/voriq-ai/smartlead-mcp#readme",
   "repository": {
     "type": "git",
-    "url": "TODO: add repository URL before publishing"
+    "url": "git+https://github.com/voriq-ai/smartlead-mcp.git"
   },
   "bugs": {
-    "url": "TODO: add issue tracker URL before publishing"
+    "url": "https://github.com/voriq-ai/smartlead-mcp/issues"
   },
   "type": "module",
   "engines": {

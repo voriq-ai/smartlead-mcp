@@ -6,9 +6,11 @@ Smartlead platform vulnerabilities here — send those to Smartlead directly.
 
 ## Reporting a vulnerability in this package
 
-Use GitHub's private security advisory flow on this repository if one is
-configured, otherwise open an issue that describes the *impact* without
-including any credential, contact record or customer data.
+Report privately via GitHub Security Advisories:
+<https://github.com/voriq-ai/smartlead-mcp/security/advisories/new>. If private
+reporting is unavailable, open an issue at
+<https://github.com/voriq-ai/smartlead-mcp/issues> that describes the *impact*
+without including any credential, contact record or customer data.
 
 Please include: affected version, configuration (`SMARTLEAD_MCP_MODE` and which
 allow-flags were set), a minimal reproduction, and what an attacker gains.

@@ -27,9 +27,10 @@ reservation.
    Verify with `npm whoami`.
 3. **Enable 2FA for publishes** on the npm account. For CI, use a granular
    access token scoped to this package only.
-4. **Replace the placeholders in `package.json`**: `homepage`, `repository.url`
-   and `bugs.url` currently read `TODO: add repository URL before publishing`.
-   npm will publish with them as-is, which is a bad look and breaks provenance.
+4. **Repository metadata is set** to <https://github.com/voriq-ai/smartlead-mcp>
+   (public, MIT, default branch `master`). `homepage`, `repository.url` and
+   `bugs.url` in `package.json` all point at it, which is what npm provenance
+   checks against — if the repository ever moves, update all three together.
 
 ## 3. Versioning
 

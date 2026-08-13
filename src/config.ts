@@ -57,7 +57,10 @@ const intInRange = (min: number, max: number) =>
     .refine((n) => n >= min && n <= max, { message: `must be between ${min} and ${max}` });
 
 const envSchema = z.object({
-  SMARTLEAD_API_KEY: z.string().trim().min(1, 'SMARTLEAD_API_KEY is required'),
+  SMARTLEAD_API_KEY: z
+    .string({ error: 'SMARTLEAD_API_KEY is required but was not set in the environment' })
+    .trim()
+    .min(1, 'SMARTLEAD_API_KEY is required but was not set in the environment'),
   SMARTLEAD_CORE_BASE_URL: httpUrl.default(DEFAULT_CORE_BASE_URL),
   SMARTLEAD_PROSPECT_BASE_URL: httpUrl.default(DEFAULT_PROSPECT_BASE_URL),
   SMARTLEAD_MCP_MODE: z.enum(['readonly', 'standard', 'unrestricted']).default('readonly'),

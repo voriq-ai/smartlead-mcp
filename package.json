@@ -60,7 +60,8 @@
     "test:live": "vitest run --project live",
     "pack:check": "npm pack --dry-run",
     "verify": "npm run typecheck && npm run lint && npm run test && npm run build && npm run pack:check",
-    "prepublishOnly": "npm run verify"
+    "prepublishOnly": "npm run verify",
+    "smoke:package": "node scripts/smoke-installed-package.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

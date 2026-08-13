@@ -26,4 +26,15 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  {
+    // Maintainer scripts are plain Node ESM, outside the TypeScript project.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { process: 'readonly', URL: 'readonly', console: 'readonly' },
+      parserOptions: { projectService: false },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
 );

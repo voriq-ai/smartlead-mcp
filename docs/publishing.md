@@ -118,6 +118,8 @@ from a laptop cannot produce it.
 npm ci
 npm run verify            # typecheck, lint, tests, build, pack dry-run
                           # also runs automatically via prepublishOnly
+npm run smoke:package     # packs, installs into a throwaway dir, and drives the
+                          # installed binary over stdio with a real MCP client
 npm pack                  # inspect the tarball one last time
 npm publish --access public
 ```

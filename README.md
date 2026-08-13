@@ -449,6 +449,8 @@ npm run test:coverage # with v8 coverage thresholds
 npm run build         # tsup -> dist/
 npm run pack:check    # npm pack --dry-run
 npm run verify        # everything above, in order
+npm run smoke:package # pack, install into a throwaway dir, drive the installed
+                      # binary with a real MCP client (no Smartlead access)
 npm run test:live     # opt-in, read-only; needs SMARTLEAD_LIVE_TESTS=true
 ```
 

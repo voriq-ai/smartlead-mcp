@@ -56,7 +56,8 @@ targets routes that are not in Smartlead's current API reference (for example
 
 ## Requirements
 
-- **Node.js 20.19 or newer** (tested on Node 20.19 and 22).
+- **Node.js 20.19 or newer.** Verified on Node 22; 20.19 is the declared floor
+  and has not been exercised in CI yet.
 - A Smartlead API key with SmartProspect access.
 
 ## Installation

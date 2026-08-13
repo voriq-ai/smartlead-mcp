@@ -160,27 +160,24 @@ export class HttpClient {
         signal: controller.signal,
       });
     } catch (error) {
-      const aborted = controller.signal.aborted || (error as Error | undefined)?.name === 'AbortError';
-      throw new SmartleadApiError(
-        {
-          kind: aborted ? 'timeout' : 'transport',
-          message: aborted
-            ? `Smartlead ${this.host} request timed out after ${timeoutMs}ms`
-            : `Smartlead ${this.host} request failed before a response was received: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-          method: options.method,
-          url: safeUrl,
-          retryable: true,
-        },
-        this.secrets,
-      );
+      clearTimeout(timer);
+      throw this.buildAbortOrTransportError(error, controller, options, safeUrl, timeoutMs, false);
+    }
+
+    const headersOut = pickHeaders(response.headers);
+
+    // The timer deliberately stays armed until the body has been read: a
+    // response whose headers arrive promptly but whose body stalls must still
+    // time out rather than resolve with a silently truncated payload.
+    let rawText: string;
+    try {
+      rawText = await response.text();
+    } catch (error) {
+      throw this.buildAbortOrTransportError(error, controller, options, safeUrl, timeoutMs, true);
     } finally {
       clearTimeout(timer);
     }
 
-    const headersOut = pickHeaders(response.headers);
-    const rawText = await safeReadText(response);
     const parsed = safeParseJson(rawText);
 
     if (!response.ok) {
@@ -219,6 +216,33 @@ export class HttpClient {
     }
 
     return { status: response.status, data: body as T, headers: headersOut };
+  }
+
+  /** Classify a thrown fetch/body-read failure as a timeout or a transport error. */
+  private buildAbortOrTransportError(
+    error: unknown,
+    controller: AbortController,
+    options: RequestOptions,
+    safeUrl: string,
+    timeoutMs: number,
+    duringBody: boolean,
+  ): SmartleadApiError {
+    const aborted = controller.signal.aborted || (error as Error | undefined)?.name === 'AbortError';
+    const stage = duringBody ? 'while reading the response body' : 'before a response was received';
+    return new SmartleadApiError(
+      {
+        kind: aborted ? 'timeout' : 'transport',
+        message: aborted
+          ? `Smartlead ${this.host} request timed out after ${timeoutMs}ms (${stage})`
+          : `Smartlead ${this.host} request failed ${stage}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+        method: options.method,
+        url: safeUrl,
+        retryable: true,
+      },
+      this.secrets,
+    );
   }
 
   private buildHttpError(
@@ -277,14 +301,6 @@ function pickHeaders(headers: Headers): Record<string, string> {
     if (value !== null) out[name] = value;
   }
   return out;
-}
-
-async function safeReadText(response: Response): Promise<string> {
-  try {
-    return await response.text();
-  } catch {
-    return '';
-  }
 }
 
 type ParseResult = { kind: 'json'; value: unknown } | { kind: 'invalid' };

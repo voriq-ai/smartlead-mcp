@@ -189,6 +189,30 @@ describe('timeouts and transport failures', () => {
     expect(error.message).toContain('timed out after 20ms');
   });
 
+  it('still times out when the headers arrive but the body stalls', async () => {
+    // A response whose body never settles must not resolve as an empty success.
+    const stalledBody = {
+      status: 200,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      text: () =>
+        new Promise<string>((_resolve, reject) => {
+          setTimeout(() => {
+            const error = new Error('The operation was aborted');
+            error.name = 'AbortError';
+            reject(error);
+          }, 30);
+        }),
+      ok: true,
+    } as unknown as Response;
+    const stallingFetch = (async () => stalledBody) as unknown as typeof fetch;
+
+    const error = await expectError(
+      client(stallingFetch, { timeoutMs: 10, maxRetries: 0 }).request({ method: 'GET', path: '/countries' }),
+    );
+    expect(error.kind).toBe('timeout');
+    expect(error.message).toContain('reading the response body');
+  });
+
   it('reports a transport error when fetch throws', async () => {
     const mock = createMockFetch([{ throws: new TypeError('fetch failed') }]);
     const error = await expectError(client(mock.fetch, { maxRetries: 0 }).request({ method: 'GET', path: '/countries' }));

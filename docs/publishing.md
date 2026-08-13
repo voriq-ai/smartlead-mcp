@@ -52,11 +52,13 @@ it until the release is agreed).
 `files` in `package.json` is an allowlist:
 
 ```
-dist/  README.md  LICENSE  SECURITY.md  CHANGELOG.md  THIRD_PARTY_NOTICES.md
+dist/  docs/  README.md  LICENSE  SECURITY.md  CHANGELOG.md
+THIRD_PARTY_NOTICES.md  .env.example
 ```
 
 `.npmignore` is a defence-in-depth backstop that additionally excludes `tests/`,
-`docs/`, `coverage/`, `src/`, `.env*` and `*.tgz`.
+`coverage/`, `src/`, private `.env*` files and `*.tgz`. `.env.example` is an
+explicitly included, credential-free configuration template.
 
 Verify before every publish:
 
@@ -116,13 +118,16 @@ from a laptop cannot produce it.
 
 ```bash
 npm ci
-npm run verify            # typecheck, lint, tests, build, pack dry-run
-                          # also runs automatically via prepublishOnly
-npm run smoke:package     # packs, installs into a throwaway dir, and drives the
-                          # installed binary over stdio with a real MCP client
+npm run verify            # typecheck, lint, coverage, build, pack dry-run,
+                          # and clean-install MCP smoke
 npm pack                  # inspect the tarball one last time
 npm publish --access public
 ```
+
+`prepublishOnly` repeats typecheck, lint, coverage, build and pack dry-run. The
+clean-install smoke deliberately stays in the preceding `npm run verify`: npm
+cannot recursively run a second `npm pack` while it is already executing the
+publish lifecycle.
 
 `publishConfig.access` is already `public`, which is required for a scoped
 package that should not be private.

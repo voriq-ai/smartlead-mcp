@@ -56,7 +56,7 @@ targets routes that are not in Smartlead's current API reference (for example
 
 ## Requirements
 
-- **Node.js 20.11 or newer** (tested on Node 20 and 22).
+- **Node.js 20.19 or newer** (tested on Node 20.19 and 22).
 - A Smartlead API key with SmartProspect access.
 
 ## Installation
@@ -101,22 +101,23 @@ client on stdin; that is expected.
 
 ### Hermes
 
-```json
-{
-  "mcpServers": {
-    "smartlead": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@voriq/smartlead-mcp"],
-      "env": {
-        "SMARTLEAD_API_KEY": "sl_your_key",
-        "SMARTLEAD_MCP_MODE": "standard",
-        "SMARTLEAD_MCP_ALLOW_CREDIT_SPEND": "false"
-      }
-    }
-  }
-}
+Add this under `mcp_servers` in `~/.hermes/config.yaml` (use
+`hermes config path` to locate the active profile's file):
+
+```yaml
+mcp_servers:
+  smartlead:
+    command: "npx"
+    args: ["-y", "@voriq/smartlead-mcp"]
+    env:
+      SMARTLEAD_API_KEY: "sl_your_key"
+      SMARTLEAD_MCP_MODE: "readonly"
+      SMARTLEAD_MCP_ALLOW_CREDIT_SPEND: "false"
 ```
+
+Restart Hermes, then verify with `hermes mcp test smartlead`. Hermes filters the
+subprocess environment, so the API key must be present in this server's `env`
+mapping rather than merely exported in an unrelated shell.
 
 ### Any other stdio MCP client
 
@@ -453,7 +454,7 @@ npm test              # unit + integration (mocked fetch, no network)
 npm run test:coverage # with v8 coverage thresholds
 npm run build         # tsup -> dist/
 npm run pack:check    # npm pack --dry-run
-npm run verify        # everything above, in order
+npm run verify        # typecheck + lint + coverage + build + pack + installed-package smoke
 npm run smoke:package # pack, install into a throwaway dir, drive the installed
                       # binary with a real MCP client (no Smartlead access)
 npm run test:live     # opt-in, read-only; needs SMARTLEAD_LIVE_TESTS=true
@@ -490,11 +491,13 @@ or client change is required.
 Nothing here has been published. See [`docs/publishing.md`](docs/publishing.md)
 for the full procedure. Summary:
 
-1. `npm run verify` (typecheck, lint, tests, build, pack dry-run) — this also
-   runs automatically via `prepublishOnly`.
+1. Run `npm run verify` for typecheck, lint, coverage, build, pack dry-run and a
+   clean installed-package MCP smoke test. `prepublishOnly` repeats every check
+   except the nested pack/install smoke, which npm cannot run recursively while
+   already preparing a publish.
 2. Replace the `TODO` repository, homepage and bugs URLs in `package.json`.
-3. Confirm the packed file list contains only `dist/`, `README.md`, `LICENSE`,
-   `SECURITY.md`, `CHANGELOG.md` and `THIRD_PARTY_NOTICES.md`.
+3. Confirm the packed file list contains only `dist/`, the public Markdown
+   documentation, `.env.example`, and `package.json`.
 4. Confirm the `@voriq` npm scope exists and you are authenticated.
 5. Tag, publish with `--access public` (optionally `--provenance`), then run a
    post-publication smoke test from a clean directory.

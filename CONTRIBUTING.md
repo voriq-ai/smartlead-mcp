@@ -27,7 +27,7 @@ npm install
 npm run verify   # typecheck + lint + coverage + build + pack + clean-install MCP smoke
 ```
 
-Node 20.11+ is required.
+Node 20.19+ is required by the development and release verification stack.
 
 ## Adding a tool
 

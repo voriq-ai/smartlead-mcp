@@ -56,8 +56,8 @@ targets routes that are not in Smartlead's current API reference (for example
 
 ## Requirements
 
-- **Node.js 20.19 or newer.** Verified on Node 22; 20.19 is the declared floor
-  and has not been exercised in CI yet.
+- **Node.js 20.19 or newer.** CI runs the full verification suite on 20.19 (the
+  declared floor) and 22 on every push.
 - A Smartlead API key with SmartProspect access.
 
 ## Installation

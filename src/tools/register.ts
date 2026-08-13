@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { evaluatePolicy } from '../security/policy.js';
 import { smartProspectTools } from './smart-prospect/index.js';
+import { coreTools } from './core/index.js';
 import {
   buildDescription,
   envelopeOutputSchema,
@@ -12,8 +13,8 @@ import {
 } from './envelope.js';
 import type { AnyToolDefinition, ToolContext } from './types.js';
 
-/** Every tool this server exposes. */
-export const allTools: AnyToolDefinition[] = [...smartProspectTools];
+/** Every tool this server exposes, SmartProspect first. */
+export const allTools: AnyToolDefinition[] = [...smartProspectTools, ...coreTools];
 
 export function findTool(name: string): AnyToolDefinition | undefined {
   return allTools.find((tool) => tool.name === name);

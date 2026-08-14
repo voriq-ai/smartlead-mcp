@@ -8,8 +8,9 @@ export type CoreQuery = Record<string, QueryValue>;
  *
  * Base URL: https://server.smartlead.ai/api/v1
  *
- * Deliberately narrow. Version 0.1.0 covers campaigns, leads, email accounts,
- * lead lists and the domain block list — not the full Smartlead surface.
+ * Hand-written operations for the core host. These encode documented
+ * constraints and cross-field rules; the remaining core endpoints are served by
+ * the generated catalog via ClientRegistry.
  */
 export class CoreClient {
   private readonly http: HttpClient;

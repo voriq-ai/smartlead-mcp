@@ -1,6 +1,6 @@
 {
   "name": "smartleadai-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Unofficial Model Context Protocol (MCP) server for the Smartlead API, covering the SmartProspect API family plus a safe minimum of core Smartlead operations. Not affiliated with, endorsed by, or sponsored by Smartlead.ai.",
   "keywords": [
     "mcp",

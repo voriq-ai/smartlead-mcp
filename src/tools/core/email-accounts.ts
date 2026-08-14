@@ -2,7 +2,10 @@ import { READ_ONLY } from '../../security/policy.js';
 import { defineTool, toolList } from '../types.js';
 import * as schema from '../../schemas/core.js';
 
-/** Read-only view of the sending infrastructure. No mailbox mutation in 0.1.0. */
+/**
+ * Hand-written read of the sending infrastructure. Mailbox creation stays out of
+ * the catalog: it requires SMTP or OAuth credentials in the request body.
+ */
 
 const listEmailAccounts = defineTool({
   name: 'smartlead_list_email_accounts',

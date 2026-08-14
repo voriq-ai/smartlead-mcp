@@ -4,9 +4,60 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] — unreleased
+## [0.2.0] — unreleased
 
-Initial implementation. **Not published.**
+Full documented API coverage, a new host pair, and an onboarding CLI.
+
+### Added
+
+- **191 of the 194 unique documented endpoints**, up from 39, across all four
+  Smartlead hosts. Two hosts are new: `smartdelivery.smartlead.ai` (27
+  endpoints) and `smart-senders.smartlead.ai` (7). Neither is reachable from the
+  core base URL, so both get their own configurable base URL
+  (`SMARTLEAD_DELIVERY_BASE_URL`, `SMARTLEAD_SENDERS_BASE_URL`).
+- Endpoint catalog and tool factory: 152 tools are generated from the
+  documentation's parameter metadata, while the 39 hand-written tools keep the
+  documented ranges, enums and cross-field rules a generator cannot express.
+- Onboarding CLI on the same binary — `init`, `doctor`, `config`, `tools`,
+  `help`, `version`. With no arguments the binary is still purely an MCP stdio
+  server. `init` and `doctor` validate the API key against
+  `GET /countries?limit=1`, which is free and touches no contact data.
+
+### Changed — read this before upgrading
+
+- **This version can send email; 0.1.0 could not.** Ten tools can put mail in a
+  real recipient's inbox, including `smartlead_utilities_send_single_email`,
+  `smartlead_campaigns_reply_email_thread` and `smartlead_campaigns_forward_email`.
+  All require `unrestricted` mode plus `SMARTLEAD_MCP_ALLOW_SEND=true` plus
+  `confirm_send: true`, so no existing configuration gains the capability
+  silently — but the capability now exists.
+- Destructive tools went from 1 to 15, including campaign deletion, lead
+  deletion, global unsubscribe, email-account deletion and mailbox purchase
+  (`smartsenders_place_order` spends real money). All gated on
+  `unrestricted` + `SMARTLEAD_MCP_ALLOW_DESTRUCTIVE` + `confirm_destructive`.
+- Safety classification is reviewed per endpoint rather than inferred from the
+  HTTP verb. Smartlead serves 14 searches over `POST`; those are read-only.
+  Several `DELETE`, `stop`, `suspend` and `block` routes are
+  suppression-increasing and are deliberately not destructive.
+
+### Excluded
+
+- `email-accounts/add-smtp` and `add-oauth` require a mailbox password or OAuth
+  refresh token in the request body. A tool argument passes through the model
+  and the model provider, so no gate makes that acceptable.
+- `campaigns/get-leads-history-bulk` documents an opaque path segment with no
+  matching path parameter; its route cannot be determined without guessing.
+
+### Security
+
+- No tool accepts a credential-shaped argument, now enforced by a test. Optional
+  credential parameters are stripped from generated schemas rather than
+  excluding the whole endpoint.
+
+## [0.1.0] — 2026-08-13
+
+Initial release. 39 tools: complete SmartProspect coverage plus a safe minimum
+of core Smartlead operations.
 
 ### Added
 

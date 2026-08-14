@@ -4,9 +4,37 @@
 <https://api.smartlead.ai/llms-full.txt> and each per-endpoint page below
 (fetched as `<page>.md` from <https://api.smartlead.ai/api-reference/…>).
 
-Version 0.1.0 covers **26/26 documented SmartProspect endpoints (100%)** and
-**13 core Smartlead operations** out of roughly 200 documented across the whole
-API. This package does not claim full Smartlead API coverage.
+Version 0.2.0 covers **191 of the 194 unique documented endpoints**, across all
+four Smartlead API hosts, including **26/26 SmartProspect (100%)**.
+
+The official reference has 212 pages but only 194 unique endpoints: 18 routes
+are documented on two pages each (for example `campaigns/get-leads` and
+`leads/get-by-campaign` are the same route).
+
+| Host | Endpoints | Covered |
+| --- | --- | --- |
+| `server.smartlead.ai` | 134 | 131 |
+| `smartdelivery.smartlead.ai` | 27 | 27 |
+| `prospect-api.smartlead.ai` | 26 | 26 |
+| `smart-senders.smartlead.ai` | 7 | 7 |
+
+Three endpoints are excluded on purpose:
+
+| Endpoint | Reason |
+| --- | --- |
+| `email-accounts/add-smtp` | Requires an SMTP password in the request body. A tool argument is relayed through the model and on to the model provider, so mailbox credentials must not be accepted as one. Connect mailboxes in the Smartlead UI. |
+| `email-accounts/add-oauth` | Requires OAuth access and refresh tokens in the body; same reasoning. |
+| `campaigns/get-leads-history-bulk` | The documented curl contains an opaque path segment (`bbfbdsFGHlBr76ruhjvh6fhHL`) with no matching path parameter, so the route cannot be determined without guessing. |
+
+Where a credential parameter is *optional*, the parameter is stripped and the
+endpoint is kept, so `clients/create` and `campaign-statistics/mailbox-statistics`
+remain available. A test asserts that no tool exposes a credential-shaped input.
+
+Tools come from two places. The 39 hand-written tools encode documented ranges,
+enums and cross-field rules (the `id`/`filter_id` XOR, the credit preflight).
+The other 152 are generated from a catalog built from the documentation's
+parameter metadata; they validate names, types, presence and any explicitly
+stated range or enum, but cannot express cross-field rules.
 
 Host key:
 
@@ -125,10 +153,11 @@ changing one `capability({...})` call in `src/tools/core/blocklist.ts`.
 
 ---
 
-## Core Smartlead — documented but omitted from 0.1.0
+## Core Smartlead — previously omitted, now covered
 
-The core Smartlead API documents roughly 200 endpoints. 0.1.0 covers a
-deliberately small subset. The table below records the reason each family is out.
+0.1.0 covered 13 core operations. 0.2.0 covers the documented core surface via
+the catalog. The table below is retained as a record of what each family
+contains and which safety classification it received.
 
 | Family | Example endpoints | Reason for omission |
 | --- | --- | --- |

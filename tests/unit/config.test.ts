@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import {
   ConfigError,
@@ -6,6 +7,7 @@ import {
   describeConfig,
   loadConfig,
 } from '../../src/config.js';
+import { SERVER_VERSION } from '../../src/server.js';
 import { TEST_API_KEY } from '../helpers/mock-fetch.js';
 
 const base = { SMARTLEAD_API_KEY: TEST_API_KEY } as NodeJS.ProcessEnv;
@@ -80,5 +82,16 @@ describe('describeConfig', () => {
     const described = describeConfig(loadConfig(base));
     expect(described.api_key_configured).toBe(true);
     expect(JSON.stringify(described)).not.toContain(TEST_API_KEY);
+  });
+});
+
+describe('version consistency', () => {
+  it('keeps SERVER_VERSION in step with package.json', async () => {
+    // These drifted apart once already: the code was rewritten while the version
+    // stayed at 0.1.0, which npm would have rejected at publish time.
+    const pkg = JSON.parse(
+      await readFile(new URL('../../package.json', import.meta.url), 'utf8'),
+    ) as { version: string };
+    expect(SERVER_VERSION).toBe(pkg.version);
   });
 });

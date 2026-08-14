@@ -115,7 +115,11 @@ side effect. Enabling an unsubscribe, global-block-list, cross-campaign
 duplicate, or community-bounce-list bypass additionally requires destructive
 approval.
 
-No one-off email sending, inbox reply, or forward tool is implemented in 0.1.0.
+**0.2.0 added sending.** Ten tools can now put mail in a real recipient's inbox,
+including `smartlead_utilities_send_single_email`, `smartlead_campaigns_reply_email_thread`
+and `smartlead_campaigns_forward_email`. All require `unrestricted` mode,
+`SMARTLEAD_MCP_ALLOW_SEND=true` and `confirm_send: true`. This capability did not
+exist in 0.1.0; review your mode and flags before upgrading.
 
 ## Destructive-operation protection
 
@@ -130,8 +134,12 @@ Deleting a block-list entry re-enables outreach to a recipient who was suppresse
 — frequently after a hard bounce or a spam complaint — so it is treated as
 higher-impact than the "standard mutation" its HTTP verb might suggest.
 
-Lead deletion, global unsubscribe and mailbox teardown endpoints are **not
-implemented** in 0.1.0.
+As of 0.2.0, lead deletion, campaign deletion, global unsubscribe, email-account
+deletion and mailbox-order placement **are** implemented, each classified
+destructive and gated accordingly. Connecting a mailbox is deliberately still
+absent: `email-accounts/add-smtp` and `add-oauth` require credentials in the
+request body, and a tool argument passes through the model and the model
+provider.
 
 ## Prompt injection
 
@@ -155,4 +163,4 @@ Host applications should still surface `credit_spending: true` and
 
 ## Supported versions
 
-0.1.0 is pre-release. Only the latest published version receives fixes.
+Only the latest published version receives fixes.

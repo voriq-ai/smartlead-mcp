@@ -1,22 +1,17 @@
 # Publishing
 
-**Nothing in this repository has been published.** Version 0.1.0 is prepared for
-independent review first. Do not run `npm publish` until a reviewer has verified
-the package.
+`smartleadai-mcp@0.1.0` is published on npm. Releases are tag-driven: pushing a
+`v*` tag runs the publish workflow, which pauses for an approval in the
+`npm-publish` environment before it publishes with provenance.
 
-## 1. npm name check
+## 1. npm name
 
-`smartleadai-mcp` was checked on **2026-08-14** and is unregistered:
+`smartleadai-mcp` is registered and owned by this project (first published
+2026-08-13). Confirm the currently published version before every release:
 
 ```bash
-npm view smartleadai-mcp version
-# npm error code E404
-# npm error 404 Not Found - GET https://registry.npmjs.org/smartleadai-mcp
+npm view smartleadai-mcp version dist-tags
 ```
-
-`npm view` is read-only: it does not reserve the name. Re-run it immediately
-before publishing, because an unregistered name is not a reservation — and this
-one is unscoped, so nothing stops another publisher taking it first.
 
 Two adjacent names are already taken by unrelated publishers and are **not**
 this project: `smartlead-mcp` (0.2.2) and `smartlead-mcp-server` (1.2.1). Both
@@ -39,7 +34,7 @@ describe this package in a way that implies continuity with either.
 
 ## 3. Versioning
 
-Semantic versioning, starting at `0.1.0`.
+Semantic versioning. Published: `0.1.0` (39 tools), `0.2.0` (191 tools).
 
 While `0.x`:
 
@@ -85,7 +80,7 @@ The tarball **must not** contain:
 Confirm no secret made it in:
 
 ```bash
-npm pack                       # produces smartleadai-mcp-0.1.0.tgz
+npm pack                       # produces smartleadai-mcp-<version>.tgz
 tar -xOzf smartleadai-mcp-*.tgz | grep -aiE 'api[_-]?key=[A-Za-z0-9]|BEGIN [A-Z ]*PRIVATE KEY'
 rm smartleadai-mcp-*.tgz
 ```
@@ -148,20 +143,21 @@ publishable as-is if it is ever moved under a scope.
 After publishing, tag and write release notes:
 
 ```bash
-git tag -a v0.1.0 -m "v0.1.0"
-git push origin v0.1.0
+git tag -a v0.2.0 -m "v0.2.0"
+git push origin v0.2.0
 ```
 
 ## 7. Release notes
 
 Take the section from `CHANGELOG.md` verbatim and lead with:
 
-- what the release covers (SmartProspect complete, core Smartlead partial),
+- what the release covers (191 of 194 documented endpoints; SmartProspect complete),
 - the unofficial / non-affiliation notice,
 - any change to safety defaults,
 - anything a reviewer should test manually.
 
-Never claim full Smartlead API coverage.
+State the coverage figure precisely and name the three excluded endpoints.
+Never round 191/194 up to "complete API coverage".
 
 ## 8. Distribution tags
 
@@ -170,7 +166,7 @@ Never claim full Smartlead API coverage.
   `0.2.0-rc.1`. Use this for anything that changes gating behaviour, so existing
   installs are not upgraded into a looser default.
 
-Move a tag with `npm dist-tag add smartleadai-mcp@0.1.0 latest`.
+Move a tag with `npm dist-tag add smartleadai-mcp@<version> latest`.
 
 ## 9. Post-publication smoke test
 
@@ -188,7 +184,7 @@ SMARTLEAD_API_KEY=dummy-key-for-startup-only \
 EOF
 ```
 
-Expect an `initialize` result and a `tools/list` result containing 39 tools. A
+Expect an `initialize` result and a `tools/list` result containing 191 tools. A
 dummy key is fine: the server does not validate it at startup, and `tools/list`
 makes no upstream request.
 

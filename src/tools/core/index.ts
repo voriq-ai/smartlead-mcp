@@ -5,8 +5,8 @@ import { emailAccountTools } from './email-accounts.js';
 import { blockListTools } from './blocklist.js';
 
 /**
- * The deliberately small core Smartlead surface exposed in 0.1.0.
- * This package's focus is SmartProspect; these tools exist to complete the
- * prospect-to-campaign workflow, not to mirror the whole Smartlead API.
+ * Hand-written core Smartlead tools. These carry documented constraints and
+ * per-call capability narrowing that the catalog factory cannot express; the
+ * rest of the core surface is generated.
  */
 export const coreTools = toolList(...campaignTools, ...leadTools, ...emailAccountTools, ...blockListTools);

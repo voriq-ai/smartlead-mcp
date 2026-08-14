@@ -9,7 +9,7 @@ import {
 } from './common.js';
 
 /**
- * Zod schemas for the subset of the core Smartlead API exposed in 0.1.0.
+ * Zod schemas for the hand-written core Smartlead tools.
  * Constraints mirror https://api.smartlead.ai/api-reference/* as checked on 2026-08-14.
  */
 

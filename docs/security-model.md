@@ -159,7 +159,10 @@ no "default campaign"), `confirm_import: true` is required, emails are
 deduplicated locally with the count reported, the request is never retried, and
 campaign status is **never** changed as a side effect.
 
-No one-off send, inbox reply, forward or test-email tool exists in 0.1.0.
+0.2.0 added ten sending tools, including one-off send, inbox reply, forward and
+test-email. Each is gated on `unrestricted` mode plus `SMARTLEAD_MCP_ALLOW_SEND=true`
+plus `confirm_send: true`. The gate prevents accidents; it does not constrain an
+agent that has been given the flag deliberately.
 
 ## 6. Destructive-operation protection
 

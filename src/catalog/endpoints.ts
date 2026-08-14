@@ -19,7 +19,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/blacklist",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID from the Smart Delivery test list",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_create_automated_test",
@@ -46,7 +52,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "capability": {
       "remoteMutation": true
     },
-    "params": []
+    "params": [{
+      "name": "folderName",
+      "type": "string",
+      "required": true,
+      "description": "Folder name, as required by the official request example",
+      "in": "body"
+    }]
   },
   {
     "tool": "smartdelivery_create_manual_test",
@@ -74,7 +86,13 @@ export const CATALOG: readonly CatalogEntry[] = [
       "remoteMutation": true,
       "destructive": true
     },
-    "params": []
+    "params": [{
+      "name": "folderId",
+      "type": "string",
+      "required": true,
+      "description": "Folder ID to delete",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_delete_tests_bulk",
@@ -99,7 +117,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/dkim-details",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_domain_blacklist",
@@ -110,7 +134,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/domain-blacklist",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_geo_report",
@@ -121,7 +151,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "POST",
     "route": "/spam-test/report/{spamTestId}/groupwise",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_get_folder_by_id",
@@ -132,7 +168,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/folder/{folderId}",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "folderId",
+      "type": "string",
+      "required": true,
+      "description": "Folder ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_get_folders",
@@ -154,7 +196,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/ip-analytics",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_list_tests",
@@ -209,7 +257,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "POST",
     "route": "/spam-test/report/{spamTestId}/providerwise",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_rdns_report",
@@ -220,7 +274,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/rdns-details",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_reply_headers",
@@ -231,7 +291,22 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/sender-account-wise/{replyId}/email-headers",
     "capability": {},
-    "params": []
+    "params": [
+      {
+        "name": "spamTestId",
+        "type": "string",
+        "required": true,
+        "description": "Spam test ID",
+        "in": "path"
+      },
+      {
+        "name": "replyId",
+        "type": "string",
+        "required": true,
+        "description": "Reply ID from the sender report",
+        "in": "path"
+      }
+    ]
   },
   {
     "tool": "smartdelivery_schedule_history",
@@ -242,7 +317,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/schedule-history",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_sender_list",
@@ -253,7 +334,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/sender-accounts",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_sender_report",
@@ -264,7 +351,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/sender-account-wise",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_spam_filter_report",
@@ -275,7 +368,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/spam-filter-details",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_spf_details",
@@ -286,7 +385,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/spf-details",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_stop_automated_test",
@@ -299,7 +404,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "capability": {
       "remoteMutation": true
     },
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Automated spam test ID to stop",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_test_details",
@@ -310,7 +421,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/{spamTestId}",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartdelivery_test_email_content",
@@ -321,7 +438,13 @@ export const CATALOG: readonly CatalogEntry[] = [
     "method": "GET",
     "route": "/spam-test/report/{spamTestId}/email-content",
     "capability": {},
-    "params": []
+    "params": [{
+      "name": "spamTestId",
+      "type": "string",
+      "required": true,
+      "description": "Spam test ID",
+      "in": "path"
+    }]
   },
   {
     "tool": "smartlead_analytics_campaign_list",

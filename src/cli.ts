@@ -1,4 +1,5 @@
 import { createInterface } from 'node:readline/promises';
+import { Writable } from 'node:stream';
 import { writeFile, readFile, chmod } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -28,10 +29,37 @@ const green = (s: string) => (process.stdout.isTTY ? `[32m${s}[0m` : s);
 const red = (s: string) => (process.stdout.isTTY ? `[31m${s}[0m` : s);
 const yellow = (s: string) => (process.stdout.isTTY ? `[33m${s}[0m` : s);
 
-/** Show only enough of a key to recognise it, never enough to use it. */
-export function maskKey(key: string): string {
-  if (key.length <= 8) return '*'.repeat(key.length);
-  return `${key.slice(0, 4)}${'*'.repeat(Math.max(key.length - 8, 4))}${key.slice(-4)}`;
+/** Confirm that a key exists without disclosing any of its characters. */
+export function maskKey(_key: string): string {
+  return '<configured; hidden>';
+}
+
+/** Read a secret from a terminal without echoing it to the output stream. */
+export async function promptSecret(
+  question: string,
+  input: NodeJS.ReadableStream = process.stdin,
+  output: NodeJS.WritableStream = process.stdout,
+): Promise<string> {
+  let muted = true;
+  const mutedOutput = new Writable({
+    write(chunk, _encoding, callback) {
+      if (!muted) output.write(chunk);
+      callback();
+    },
+  });
+  output.write(question);
+  const rl = createInterface({
+    input,
+    output: mutedOutput,
+    terminal: Boolean((input as NodeJS.ReadStream).isTTY),
+  });
+  try {
+    return await rl.question('');
+  } finally {
+    muted = false;
+    rl.close();
+    output.write('\n');
+  }
 }
 
 export const HELP = `${PKG} — unofficial MCP server for the Smartlead API
@@ -211,21 +239,21 @@ async function commandInit(): Promise<number> {
   out(dim('Not affiliated with, endorsed by, or sponsored by Smartlead.ai.'));
   out();
 
-  let key = process.env.SMARTLEAD_API_KEY?.trim();
+  let key = process.env.SMARTLEAD_API_KEY?.trim() ?? '';
+  if (key) {
+    out(`Found SMARTLEAD_API_KEY in the environment: ${maskKey(key)}`);
+  } else {
+    out('Get your API key from https://app.smartlead.ai/app/settings/profile');
+    out();
+    key = (await promptSecret('Smartlead API key: ')).trim();
+    if (!key) {
+      out(red('No key entered.'));
+      return 1;
+    }
+  }
+
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   try {
-    if (key) {
-      out(`Found SMARTLEAD_API_KEY in the environment: ${maskKey(key)}`);
-    } else {
-      out('Get your API key from https://app.smartlead.ai/app/settings/profile');
-      out();
-      key = (await rl.question('Smartlead API key: ')).trim();
-      if (!key) {
-        out(red('No key entered.'));
-        return 1;
-      }
-    }
-
     out();
     out(dim('Verifying against a free read-only endpoint...'));
     const probe = await verifyKey({ ...loadConfigWithKey(key) });

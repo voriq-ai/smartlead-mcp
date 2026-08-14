@@ -84,9 +84,15 @@ if (!toolName) {
     return marks.join(', ');
   };
   const width = Math.max(...tools.map((t) => t.name.length));
-  for (const group of ['smartprospect_', 'smartlead_']) {
-    console.log(group === 'smartprospect_' ? 'SmartProspect' : 'Core Smartlead');
-    for (const t of tools.filter((x) => x.name.startsWith(group))) {
+  const groups = [
+    ['smartprospect_', 'SmartProspect'],
+    ['smartlead_', 'Core Smartlead'],
+    ['smartdelivery_', 'Smart Delivery'],
+    ['smartsenders_', 'Smart Senders'],
+  ];
+  for (const [prefix, label] of groups) {
+    console.log(label);
+    for (const t of tools.filter((x) => x.name.startsWith(prefix))) {
       console.log(`  ${t.name.padEnd(width)}  ${flag(t)}`);
     }
     console.log('');

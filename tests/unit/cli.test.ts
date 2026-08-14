@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PassThrough } from 'node:stream';
 import {
   CLI_COMMANDS,
   HELP,
@@ -6,22 +7,42 @@ import {
   clientSnippets,
   isCliInvocation,
   maskKey,
+  promptSecret,
 } from '../../src/cli.js';
 import { TEST_API_KEY } from '../helpers/mock-fetch.js';
 
 describe('maskKey', () => {
-  it('shows only enough of a key to recognise it', () => {
+  it('confirms configuration without revealing any key characters', () => {
     const masked = maskKey(TEST_API_KEY);
-    expect(masked).not.toBe(TEST_API_KEY);
-    expect(masked).not.toContain(TEST_API_KEY);
-    expect(masked.startsWith(TEST_API_KEY.slice(0, 4))).toBe(true);
-    expect(masked.endsWith(TEST_API_KEY.slice(-4))).toBe(true);
-    // The middle must be fully obscured.
-    expect(masked.slice(4, -4)).toMatch(/^\*+$/);
+    expect(masked).toBe('<configured; hidden>');
+    for (const fragment of [TEST_API_KEY.slice(0, 4), TEST_API_KEY.slice(-4)]) {
+      expect(masked).not.toContain(fragment);
+    }
   });
 
   it('never reveals any character of a short key', () => {
-    expect(maskKey('abc123')).toBe('******');
+    expect(maskKey('abc123')).toBe('<configured; hidden>');
+  });
+});
+
+describe('promptSecret', () => {
+  it('returns terminal input without echoing any secret characters', async () => {
+    const input = new PassThrough() as PassThrough & { isTTY: boolean };
+    input.isTTY = true;
+    const output = new PassThrough();
+    let transcript = '';
+    output.on('data', (chunk) => {
+      transcript += chunk.toString();
+    });
+
+    const answer = promptSecret('Smartlead API key: ', input, output);
+    input.end(`${TEST_API_KEY}\n`);
+
+    await expect(answer).resolves.toBe(TEST_API_KEY);
+    expect(transcript).toContain('Smartlead API key: ');
+    expect(transcript).not.toContain(TEST_API_KEY);
+    expect(transcript).not.toContain(TEST_API_KEY.slice(0, 4));
+    expect(transcript).not.toContain(TEST_API_KEY.slice(-4));
   });
 });
 

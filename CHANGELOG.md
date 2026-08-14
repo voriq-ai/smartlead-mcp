@@ -4,7 +4,30 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] — unreleased
+## [0.2.1] — unreleased
+
+### Fixed
+
+- Added the 19 missing Smart Delivery path parameters that made 18 published
+  tools fail before HTTP, plus the documented `folderName` input.
+- Corrected nested request schemas, documented integer types, and cross-field
+  validation for sending, lead-list, webhook, and date-range operations.
+- Corrected safety classifications for unsuspension, warmup, account updates,
+  mailbox generation and account disassociation.
+- CLI setup now hides every API-key character, `doctor` no longer prints key
+  fragments, `.env` appends cannot concatenate lines or inject new variables,
+  and the manual harness lists all API families.
+
+### Changed
+
+- Exposes 183 reviewed tools: 39 hand-written and 144 corrected catalog tools.
+  The prior 191/194 coverage ratio was withdrawn because the documentation has
+  both duplicate pages and multi-operation pages.
+- Excludes malformed, secret-returning, financially consequential, duplicate,
+  and request-schema-free operations until dedicated safe handling exists.
+- Every exposed handler now has a mocked host/method/path/body routing test.
+
+## [0.2.0] — 2026-08-14
 
 Full documented API coverage, a new host pair, and an onboarding CLI.
 

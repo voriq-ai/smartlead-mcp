@@ -34,7 +34,8 @@ describe this package in a way that implies continuity with either.
 
 ## 3. Versioning
 
-Semantic versioning. Published: `0.1.0` (39 tools), `0.2.0` (191 tools).
+Semantic versioning. Published: `0.1.0` (39 tools), `0.2.0` (191 advertised
+tools). The corrected `0.2.1` surface has 183 reviewed tools.
 
 While `0.x`:
 
@@ -151,13 +152,13 @@ git push origin v0.2.0
 
 Take the section from `CHANGELOG.md` verbatim and lead with:
 
-- what the release covers (191 of 194 documented endpoints; SmartProspect complete),
+- what the release covers (183 reviewed tools; SmartProspect complete),
 - the unofficial / non-affiliation notice,
 - any change to safety defaults,
 - anything a reviewer should test manually.
 
-State the coverage figure precisely and name the three excluded endpoints.
-Never round 191/194 up to "complete API coverage".
+State the tool inventory precisely and name every excluded operation. Do not
+turn the documentation's route-record count into an endpoint coverage ratio.
 
 ## 8. Distribution tags
 
@@ -184,7 +185,7 @@ SMARTLEAD_API_KEY=dummy-key-for-startup-only \
 EOF
 ```
 
-Expect an `initialize` result and a `tools/list` result containing 191 tools. A
+Expect an `initialize` result and a `tools/list` result containing 183 tools. A
 dummy key is fine: the server does not validate it at startup, and `tools/list`
 makes no upstream request.
 

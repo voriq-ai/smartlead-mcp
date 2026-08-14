@@ -5,6 +5,7 @@ import {
   HELP,
   claudeDesktopConfigPath,
   clientSnippets,
+  dotenvAppendBlock,
   isCliInvocation,
   maskKey,
   promptSecret,
@@ -43,6 +44,24 @@ describe('promptSecret', () => {
     expect(transcript).not.toContain(TEST_API_KEY);
     expect(transcript).not.toContain(TEST_API_KEY.slice(0, 4));
     expect(transcript).not.toContain(TEST_API_KEY.slice(-4));
+  });
+});
+
+describe('dotenvAppendBlock', () => {
+  it('inserts a separator before appending to a file that lacks a final newline', () => {
+    expect(dotenvAppendBlock('EXISTING=value', 'test-key', 'readonly')).toBe(
+      '\nSMARTLEAD_API_KEY=test-key\nSMARTLEAD_MCP_MODE=readonly\n',
+    );
+  });
+
+  it('does not add a redundant blank line', () => {
+    expect(dotenvAppendBlock('EXISTING=value\n', 'test-key', 'standard')).toBe(
+      'SMARTLEAD_API_KEY=test-key\nSMARTLEAD_MCP_MODE=standard\n',
+    );
+  });
+
+  it('rejects newline injection through an environment-supplied key', () => {
+    expect(() => dotenvAppendBlock('', 'key\nINJECTED=true', 'readonly')).toThrow(/newline/);
   });
 });
 

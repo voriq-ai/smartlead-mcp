@@ -62,6 +62,13 @@ export async function promptSecret(
   }
 }
 
+/** Build a safe append block for an existing dotenv file. */
+export function dotenvAppendBlock(existing: string, key: string, mode: string): string {
+  if (/[\r\n]/.test(key)) throw new Error('SMARTLEAD_API_KEY must not contain a newline');
+  const prefix = existing.length > 0 && !existing.endsWith('\n') ? '\n' : '';
+  return `${prefix}SMARTLEAD_API_KEY=${key}\nSMARTLEAD_MCP_MODE=${mode}\n`;
+}
+
 export const HELP = `${PKG} — unofficial MCP server for the Smartlead API
 
 ${bold('USAGE')}
@@ -300,14 +307,15 @@ async function commandInit(): Promise<number> {
     const writeEnv = (await rl.question('Also write a local .env file for development? [y/N]: ')).trim().toLowerCase();
     if (writeEnv === 'y' || writeEnv === 'yes') {
       const path = resolve(process.cwd(), '.env');
+      let existing = '';
       if (existsSync(path)) {
-        const existing = await readFile(path, 'utf8');
+        existing = await readFile(path, 'utf8');
         if (existing.includes('SMARTLEAD_API_KEY')) {
           out(yellow(`  .env already defines SMARTLEAD_API_KEY — leaving it untouched.`));
           return 0;
         }
       }
-      await writeFile(path, `SMARTLEAD_API_KEY=${key}\nSMARTLEAD_MCP_MODE=${mode}\n`, { flag: 'a' });
+      await writeFile(path, dotenvAppendBlock(existing, key, mode), { flag: 'a' });
       await chmod(path, 0o600);
       out(`${green('✓')} wrote ${path} (mode 0600)`);
       out(dim('  Make sure .env is git-ignored.'));

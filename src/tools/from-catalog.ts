@@ -81,10 +81,66 @@ function buildInputSchema(entry: CatalogEntry): z.ZodObject<z.ZodRawShape> {
     );
   }
 
-  // Not strict: Smartlead documents optional fields inconsistently across
-  // families, and rejecting an undocumented-but-valid field would be worse than
-  // forwarding it. Hand-written tools remain strict.
-  return z.object(shape as z.ZodRawShape);
+  const schema = z.strictObject(shape as z.ZodRawShape);
+  return addCrossFieldValidation(entry, schema);
+}
+
+function addCrossFieldValidation(
+  entry: CatalogEntry,
+  schema: z.ZodObject<z.ZodRawShape>,
+): z.ZodObject<z.ZodRawShape> {
+  return schema.superRefine((value: Record<string, unknown>, ctx) => {
+    const issue = (message: string, path: string[]) => ctx.addIssue({ code: 'custom', message, path });
+
+    if (entry.tool === 'smartlead_utilities_send_single_email') {
+      if (value.fromEmail === undefined && value.fromEmailId === undefined) {
+        issue('Provide at least one of fromEmail or fromEmailId.', ['fromEmail']);
+      }
+    }
+
+    if (entry.tool === 'smartlead_lead_lists_push_between_lists') {
+      if (value.leadIds === undefined && value.fromListId === undefined) {
+        issue('Provide leadIds or fromListId.', ['leadIds']);
+      }
+    }
+
+    if (entry.tool === 'smartlead_lead_lists_push_to_campaign') {
+      const campaignTargets = [value.campaignId, value.campaignName].filter((item) => item !== undefined);
+      if (campaignTargets.length !== 1) {
+        issue('Provide exactly one of campaignId or campaignName.', ['campaignId']);
+      }
+
+      const leadList = value.leadList;
+      if (!leadList || typeof leadList !== 'object' || Array.isArray(leadList)) {
+        issue('leadList must select leads by listId, leadIds, or allLeads.', ['leadList']);
+      } else {
+        const selection = leadList as Record<string, unknown>;
+        const methods = [
+          selection.listId !== undefined,
+          Array.isArray(selection.leadIds) && selection.leadIds.length > 0,
+          selection.allLeads === true,
+        ].filter(Boolean).length;
+        if (methods !== 1) {
+          issue('leadList must use exactly one of listId, non-empty leadIds, or allLeads: true.', ['leadList']);
+        }
+      }
+    }
+
+    if (entry.tool === 'smartlead_webhooks_create') {
+      if (value.association_type === 'campaign' && value.email_campaign_id === undefined) {
+        issue('email_campaign_id is required for a campaign webhook.', ['email_campaign_id']);
+      }
+      if (value.association_type === 'client' && value.client_id === undefined) {
+        issue('client_id is required for a client webhook.', ['client_id']);
+      }
+    }
+
+    if (entry.tool === 'smartlead_campaign_statistics_mailbox_statistics') {
+      if ((value.start_date === undefined) !== (value.end_date === undefined)) {
+        issue('start_date and end_date must be provided together.', ['end_date']);
+      }
+    }
+  }) as z.ZodObject<z.ZodRawShape>;
 }
 
 const CONFIRMATION_FIELDS = new Set([
@@ -102,12 +158,20 @@ export function toolFromCatalog(entry: CatalogEntry): AnyToolDefinition {
     body: entry.params.filter((p) => p.in === 'body'),
   };
 
+  const worstCaseCapability = capability(entry.capability);
+
   return defineTool({
     name: entry.tool,
     title: entry.title,
     summary: entry.summary,
     notes: [...(entry.notes ?? []), `Documentation: ${entry.docUrl}`],
-    capability: capability(entry.capability),
+    capability: worstCaseCapability,
+    resolveCapability:
+      entry.tool === 'smartlead_email_accounts_warmup_settings'
+        ? (args) => capability({ remoteMutation: true, sending: args.warmup_enabled === true })
+        : entry.tool === 'smartlead_email_accounts_update'
+          ? (args) => capability({ remoteMutation: true, sending: args.is_suspended === false })
+          : undefined,
     endpoint: { host: entry.host, method: entry.method, route: entry.route },
     inputSchema,
     handler: async (args: Record<string, unknown>, ctx): Promise<ToolPayload> => {
@@ -130,6 +194,10 @@ export function toolFromCatalog(entry: CatalogEntry): AnyToolDefinition {
         body ??= {};
         body[p.name] = value;
       }
+
+      // Official POST/PUT/PATCH examples consistently send JSON, including `{}`
+      // when an endpoint has no documented body fields.
+      if (body === undefined && entry.method !== 'GET' && entry.method !== 'DELETE') body = {};
 
       // Confirmation flags are policy inputs, never request payload.
       for (const key of Object.keys(args)) {

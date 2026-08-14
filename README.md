@@ -6,16 +6,18 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server for the
 **Smartlead API**, with complete **SmartProspect** coverage, for MCP-capable
 agents and clients.
 
-**191 tools covering 191 of the 194 unique endpoints in Smartlead's official API
-reference**, across all four Smartlead API hosts. Three endpoints are excluded
-on purpose, each with a recorded reason — see
+**183 safety-reviewed tools across all four Smartlead API hosts.** The official
+reference cannot be represented honestly as a simple tool-count ratio: it has
+duplicate pages, and one page combines four different API-key methods. Unsafe,
+duplicate, financially consequential, and undocumented operations are excluded
+with recorded reasons — see
 [`docs/endpoint-coverage.md`](docs/endpoint-coverage.md).
 
 That includes **all 26 documented SmartProspect endpoints**, the prospecting
 product other Smartlead MCP servers omit entirely.
 
-Everything is built from Smartlead's public official documentation. Every route,
-method, parameter name and limit is traceable to a documentation page listed in
+Everything is built from Smartlead's public official documentation. Exposed
+routes, methods, parameters, corrections, and known documentation gaps are listed in
 [`docs/endpoint-coverage.md`](docs/endpoint-coverage.md).
 
 ---
@@ -108,16 +110,16 @@ write a local `.env` (mode `0600`) but never overwrites an existing key.
 
 ```
 ✓ configuration  valid
-  key            sl_1************************9f2c
+  key            <configured; hidden>
   mode           readonly  (default — no writes, no credit spend)
   credit spend   disabled
 ✓ api key        accepted by Smartlead
-✓ tools          191 registered
+✓ tools          183 registered
 ```
 
 Both validate the key against `GET /countries?limit=1` — free, read-only, and
 touching no contact data, so diagnosing a setup can never spend credits or pull
-a prospect record. Keys are only ever shown as first-four/last-four.
+a prospect record. The CLI never prints any character from the configured key.
 
 ## Client configuration
 
@@ -231,29 +233,29 @@ Rules that hold in **every** mode:
 
 ## Tool reference
 
-191 tools across four hosts. The full table would be unreadable here, so list
+183 tools across four hosts. The full table would be unreadable here, so list
 them from the CLI instead — it prints each tool's safety classification:
 
 ```bash
-smartleadai-mcp tools              # all 191
+smartleadai-mcp tools              # all 183
 smartleadai-mcp tools campaign     # filter by substring
 ```
 
 | Host | Base URL | Tools | Prefix |
 | --- | --- | --- | --- |
 | SmartProspect | `prospect-api.smartlead.ai/api/v1/search-email-leads` | 26 | `smartprospect_` |
-| Core | `server.smartlead.ai/api/v1` | 131 | `smartlead_` |
-| Smart Delivery | `smartdelivery.smartlead.ai/api/v1` | 27 | `smartdelivery_` |
-| Smart Senders | `smart-senders.smartlead.ai/api/v1` | 7 | `smartsenders_` |
+| Core | `server.smartlead.ai/api/v1` | 128 | `smartlead_` |
+| Smart Delivery | `smartdelivery.smartlead.ai/api/v1` | 24 | `smartdelivery_` |
+| Smart Senders | `smart-senders.smartlead.ai/api/v1` | 5 | `smartsenders_` |
 
 By safety classification:
 
 | Classification | Tools | Gate |
 | --- | --- | --- |
 | Read-only | 113 | none — available in every mode |
-| Remote mutation | 78 | `standard` mode or above |
+| Remote mutation | 70 | `standard` mode or above |
 | Sends email | 10 | `unrestricted` + `ALLOW_SEND` + `confirm_send` |
-| Destructive | 15 | `unrestricted` + `ALLOW_DESTRUCTIVE` + `confirm_destructive` |
+| Destructive | 12 | `unrestricted` + `ALLOW_DESTRUCTIVE` + `confirm_destructive` |
 | Consumes credits | 2 | `ALLOW_CREDIT_SPEND` + `confirm_credit_spend` + preflight |
 
 Classification is reviewed per endpoint, not inferred from the HTTP verb.
@@ -532,19 +534,16 @@ Per-endpoint source pages, with the date each was checked, are listed in
 
 ## Known limitations
 
-- **Three documented endpoints are excluded.** `email-accounts/add-smtp` and
-  `add-oauth` require a mailbox password or OAuth refresh token in the request
-  body; a tool argument is relayed through the model and on to the model
-  provider, so no gate makes that safe — connect mailboxes in the Smartlead UI.
-  `campaigns/get-leads-history-bulk` documents a curl with an opaque path
-  segment that has no matching path parameter, so its route cannot be
-  determined without guessing. See `docs/endpoint-coverage.md`.
+- **Unsafe or undocumented operations are excluded.** These include mailbox
+  credential ingestion, client API-key management, live OTP retrieval, domain
+  purchases, and sending or Smart Delivery operations whose request schema is
+  absent from the official page. A duplicate lead-update page is also collapsed
+  into the canonical tool. See `docs/endpoint-coverage.md` for the full list.
 - **Most tools are catalog-generated.** The 39 hand-written tools encode every
   documented range, enum and cross-field rule (such as the `id`/`filter_id`
-  XOR). The other 152 are generated from the documentation's parameter
-  metadata: they validate names, types, presence, and any range or enum the
-  docs stated explicitly, but they cannot express cross-field rules. Invalid
-  combinations reach Smartlead and are rejected there.
+  XOR). Another 144 are generated from corrected documentation metadata. The
+  correction layer removes flattened nested fields, fixes documented integer
+  types, applies reviewed safety overrides, and enforces known cross-field rules.
 - **This server can send email.** With `unrestricted` mode plus
   `SMARTLEAD_MCP_ALLOW_SEND=true`, 10 tools can put mail in a real recipient's
   inbox, including `smartlead_utilities_send_single_email`. The gate stops

@@ -453,13 +453,16 @@ describe('capability declarations', () => {
       'smartlead_campaigns_delete',
       'smartlead_leads_unsubscribe',
       'smartlead_email_accounts_delete',
-      'smartsenders_place_order',
     ]) {
       expect(destructive.has(name), name).toBe(true);
     }
     // Suppression-increasing actions must NOT be destructive, or the safe action
     // becomes harder to take than the dangerous one.
-    for (const name of ['smartlead_inbox_block_domains', 'smartlead_email_accounts_suspend']) {
+    for (const name of [
+      'smartlead_inbox_block_domains',
+      'smartlead_email_accounts_suspend',
+      'smartlead_campaigns_remove_email_accounts',
+    ]) {
       expect(destructive.has(name), name).toBe(false);
     }
   });
@@ -470,15 +473,32 @@ describe('capability declarations', () => {
       'smartlead_update_campaign_status',
       'smartlead_utilities_send_single_email',
       'smartlead_campaigns_reply_email_thread',
-      'smartlead_campaigns_forward_email',
       'smartlead_campaigns_send_test_email',
+      'smartlead_email_accounts_unsuspend',
+      'smartlead_email_accounts_warmup_settings',
+      'smartlead_email_accounts_update',
     ]) {
       expect(sending.has(name), name).toBe(true);
     }
     // Smartlead serves several searches over POST; those are reads, not sends.
-    for (const name of ['smartlead_inbox_get_scheduled', 'smartlead_inbox_get_unread']) {
+    for (const name of [
+      'smartlead_inbox_get_scheduled',
+      'smartlead_inbox_get_unread',
+      'smartsenders_auto_generate',
+    ]) {
       expect(sending.has(name), name).toBe(false);
     }
+  });
+
+  it('narrows conditional sending capability for warmup and account updates', () => {
+    const warmup = findTool('smartlead_email_accounts_warmup_settings')!;
+    expect(warmup.resolveCapability?.({ warmup_enabled: false }).sending).toBe(false);
+    expect(warmup.resolveCapability?.({ warmup_enabled: true }).sending).toBe(true);
+
+    const update = findTool('smartlead_email_accounts_update')!;
+    expect(update.resolveCapability?.({ is_suspended: true }).sending).toBe(false);
+    expect(update.resolveCapability?.({ is_suspended: false }).sending).toBe(true);
+    expect(update.resolveCapability?.({ max_email_per_day: 20 }).sending).toBe(false);
   });
 
   it('never accepts a third-party credential as a tool argument', () => {

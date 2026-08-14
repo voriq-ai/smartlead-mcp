@@ -4,27 +4,39 @@
 <https://api.smartlead.ai/llms-full.txt> and each per-endpoint page below
 (fetched as `<page>.md` from <https://api.smartlead.ai/api-reference/…>).
 
-Version 0.2.0 covers **191 of the 194 unique documented endpoints**, across all
-four Smartlead API hosts, including **26/26 SmartProspect (100%)**.
+Version 0.2.1 exposes **183 safety-reviewed tools** across all four Smartlead API
+hosts, including **26/26 SmartProspect (100%)**. Tool count is deliberately not
+presented as a coverage ratio: the reference contains duplicate pages, while the
+client API-key page combines four different methods into one page.
 
-The official reference has 212 pages but only 194 unique endpoints: 18 routes
-are documented on two pages each (for example `campaigns/get-leads` and
-`leads/get-by-campaign` are the same route).
+The reference index has 212 pages and 194 deduplicated route records, but that
+record count is not a trustworthy operation count: some pages duplicate a route
+while `clients/api-keys` contains four method/route combinations on one page.
 
-| Host | Endpoints | Covered |
+| Host | Exposed tools |
 | --- | --- | --- |
-| `server.smartlead.ai` | 134 | 131 |
-| `smartdelivery.smartlead.ai` | 27 | 27 |
-| `prospect-api.smartlead.ai` | 26 | 26 |
-| `smart-senders.smartlead.ai` | 7 | 7 |
+| `server.smartlead.ai` | 128 |
+| `smartdelivery.smartlead.ai` | 24 |
+| `prospect-api.smartlead.ai` | 26 |
+| `smart-senders.smartlead.ai` | 5 |
 
-Three endpoints are excluded on purpose:
+The following pages or operations are excluded on purpose:
 
 | Endpoint | Reason |
 | --- | --- |
 | `email-accounts/add-smtp` | Requires an SMTP password in the request body. A tool argument is relayed through the model and on to the model provider, so mailbox credentials must not be accepted as one. Connect mailboxes in the Smartlead UI. |
 | `email-accounts/add-oauth` | Requires OAuth access and refresh tokens in the body; same reasoning. |
 | `campaigns/get-leads-history-bulk` | The documented curl contains an opaque path segment (`bbfbdsFGHlBr76ruhjvh6fhHL`) with no matching path parameter, so the route cannot be determined without guessing. |
+| `clients/api-keys` | Combines POST, GET, DELETE, and PUT on different routes. Create/reset return reusable API credentials, and MCP has no secure secret-output channel. |
+| `campaigns/forward-email` | Sends email, but the official page has no verified request-body schema. |
+| `smart-delivery/create-automated-test` | Configuration-heavy sending operation documented only with an empty placeholder body. |
+| `smart-delivery/create-manual-test` | Test creation is documented only with an empty placeholder body. |
+| `smart-delivery/delete-tests-bulk` | The test-ID request body required for deletion is undocumented. |
+| `smart-senders/get-otp` | Returns a live mailbox OTP; returning it through an MCP/model transcript is unsafe. |
+| `smart-senders/place-order` | Purchases domains and mailboxes; the policy has no dedicated financial-consent capability. |
+
+`campaigns/update-lead` is not exposed separately because it duplicates the
+canonical `leads/update` method and route.
 
 Where a credential parameter is *optional*, the parameter is stripped and the
 endpoint is kept, so `clients/create` and `campaign-statistics/mailbox-statistics`
@@ -32,9 +44,9 @@ remain available. A test asserts that no tool exposes a credential-shaped input.
 
 Tools come from two places. The 39 hand-written tools encode documented ranges,
 enums and cross-field rules (the `id`/`filter_id` XOR, the credit preflight).
-The other 152 are generated from a catalog built from the documentation's
-parameter metadata; they validate names, types, presence and any explicitly
-stated range or enum, but cannot express cross-field rules.
+Another 144 are generated from the documentation catalog after a reviewed
+correction layer removes unsafe pages and flattened nested fields, fixes integer
+types and safety classifications, and adds known conditional validation.
 
 Host key:
 

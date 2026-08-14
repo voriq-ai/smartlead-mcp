@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
 
-const EXPECTED_TOOL_COUNT = 191;
+const EXPECTED_TOOL_COUNT = 183;
 const SYNTHETIC_KEY = 'smoke-test-key-not-a-real-credential';
 
 const projectRoot = new URL('..', import.meta.url).pathname;
@@ -78,6 +78,20 @@ try {
     tools.every((t) => !Object.keys(t.inputSchema?.properties ?? {}).some((k) => /api_?key|token/i.test(k))),
   );
   check('nothing references the nonexistent /verify-emails route', !JSON.stringify(tools).includes('verify-emails'));
+  const excluded = [
+    'smartlead_clients_api_keys',
+    'smartlead_campaigns_update_lead',
+    'smartlead_campaigns_forward_email',
+    'smartdelivery_create_automated_test',
+    'smartdelivery_create_manual_test',
+    'smartdelivery_delete_tests_bulk',
+    'smartsenders_get_otp',
+    'smartsenders_place_order',
+  ];
+  check(
+    'unsafe, duplicate, and malformed catalog pages are not exposed',
+    excluded.every((name) => !tools.some((tool) => tool.name === name)),
+  );
 
   const refusal = await client.callTool({
     name: 'smartprospect_find_emails',

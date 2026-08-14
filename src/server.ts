@@ -6,7 +6,7 @@ import { SERVER_NAME, type SmartleadConfig } from './config.js';
 import { registerTools } from './tools/register.js';
 import type { ToolContext } from './tools/types.js';
 
-export const SERVER_VERSION = '0.2.0';
+export const SERVER_VERSION = '0.2.1';
 
 export interface CreateServerOptions {
   /** Injected in tests; defaults to the global fetch. */

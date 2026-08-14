@@ -4,7 +4,7 @@ import { evaluatePolicy } from '../security/policy.js';
 import { smartProspectTools } from './smart-prospect/index.js';
 import { coreTools } from './core/index.js';
 import { toolsFromCatalog } from './from-catalog.js';
-import { CATALOG } from '../catalog/endpoints.js';
+import { SUPPORTED_CATALOG } from '../catalog/corrections.js';
 import {
   buildDescription,
   envelopeOutputSchema,
@@ -23,7 +23,7 @@ import type { AnyToolDefinition, ToolContext } from './types.js';
  */
 export const handWrittenTools: AnyToolDefinition[] = [...smartProspectTools, ...coreTools];
 
-export const catalogTools: AnyToolDefinition[] = toolsFromCatalog(CATALOG);
+export const catalogTools: AnyToolDefinition[] = toolsFromCatalog(SUPPORTED_CATALOG);
 
 export const allTools: AnyToolDefinition[] = [...handWrittenTools, ...catalogTools];
 

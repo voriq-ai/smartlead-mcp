@@ -29,11 +29,10 @@ describe('MCP initialization and tools/list', () => {
   it('matches the expected tool inventory', async () => {
     const { client, server } = await connect();
     const { tools } = await client.listTools();
-    // The full name list is 193 entries; assert the shape that actually matters.
-    expect(tools).toHaveLength(191);
+    expect(tools).toHaveLength(183);
     expect(tools.filter((t) => t.name.startsWith('smartprospect_'))).toHaveLength(26);
-    expect(tools.filter((t) => t.name.startsWith('smartdelivery_'))).toHaveLength(27);
-    expect(tools.filter((t) => t.name.startsWith('smartsenders_'))).toHaveLength(7);
+    expect(tools.filter((t) => t.name.startsWith('smartdelivery_'))).toHaveLength(24);
+    expect(tools.filter((t) => t.name.startsWith('smartsenders_'))).toHaveLength(5);
     expect(new Set(tools.map((t) => t.name)).size).toBe(tools.length);
     await server.close();
   });

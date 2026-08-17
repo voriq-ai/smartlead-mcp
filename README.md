@@ -37,6 +37,7 @@ routes, methods, parameters, corrections, and known documentation gaps are liste
 - [Privacy and security](#privacy-and-security)
 - [Development](#development)
 - [Publishing checklist](#publishing-checklist)
+- [Useful links](#useful-links)
 - [Official Smartlead documentation](#official-smartlead-documentation)
 - [Known limitations](#known-limitations)
 - [Licence](#licence)
@@ -519,6 +520,11 @@ for the full procedure. Summary:
    membership is needed — but nothing reserves it either until it is published.
 4. Tag, publish with `--access public` (optionally `--provenance`), then run a
    post-publication smoke test from a clean directory.
+
+## Useful links
+
+- [Using Smartlead.ai MCP Safely](https://voriq.ai/blog/using-smartleadai-mcp-safely)
+  — Voriq's guide to configuring and using this MCP server safely.
 
 ## Official Smartlead documentation
 
